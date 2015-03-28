@@ -10,8 +10,7 @@ module Scalyr
     Fluent::Plugin.register_output( 'scalyr', self )
 
     config_param :api_write_token, :string
-    config_param :server_host, :string, :default => nil
-    config_param :server_type, :string, :default => nil
+    config_param :session_info, :hash, :default => nil
     config_param :region, :string, :default => nil
     config_param :add_events, :string, :default => "https://www.scalyr.com/addEvents"
 
