@@ -17,6 +17,8 @@ module Scalyr
       super
       @last_timestamp = 0
       @add_events_uri = URI @add_events
+
+      raise Fluent::ConfigError, "num_threads is currently limited to 1. You specified #{@num_threads}." if @num_threads > 1
     end
 
     def start
