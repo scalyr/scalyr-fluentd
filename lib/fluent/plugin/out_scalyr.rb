@@ -85,7 +85,10 @@ module Scalyr
 
       response = https.request( post )
 
-      puts response
+      $log.debug "Post size: #{post.body.length/1024/1024}m"
+
+      $log.debug "Response Code: #{response.code}"
+      $log.debug "Response Body: #{response.body}"
 
 
     end
