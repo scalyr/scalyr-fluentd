@@ -11,16 +11,16 @@ Installation
 ###Via gemfile
 
 From the source directory run
-'''
+```
 gem build fluent-plugin-scalyr
 
-'''
+```
 
 Then install the Gem using fluent's gem manager
 
-'''
+```
 fluent-gem install fluent-plugin-scaly-<VERSION>.gem
-'''
+```
 
 ###Via copying to the plugin directory
 Copy or create a symbolic link from lib/fluent/plugin/out_scalyr.rb to /etc/fluent/plugins
@@ -30,13 +30,13 @@ Usage
 
 In your fluent.conf file, set up a match for any tag you'd like to send to Scalyr e.g. 
 
-'''
+```
 <match apache.access>
   @type scalyr
   ...
 
 </match>
-'''
+```
 
 Valid fields are:
 
@@ -50,8 +50,8 @@ Note that fluentd tag names will be used for Scalyr thread names.  Each match bl
 
 If you want to sent raw logs, rather than parsed/formatted json, make sure to specify
 
-'''
+```
   format none
-'''
+```
 
 in your log source.
