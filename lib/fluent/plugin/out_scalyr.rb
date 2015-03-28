@@ -1,5 +1,4 @@
 
-require 'set'
 require 'securerandom'
 require 'json'
 require 'net/http'
@@ -23,6 +22,8 @@ module Scalyr
     def start
       super
       @session = SecureRandom.uuid
+      @thread_ids = Hash.new
+      @next_id = 1
     end
 
     def format( tag, time, record )
@@ -30,19 +31,21 @@ module Scalyr
     end
 
     def write( chunk )
-      thread_ids = Set.new
 
       events = Array.new
 
       chunk.msgpack_each {|(tag,time,record)|
 
-        thread_ids.add( tag )
+        if !@thread_ids.key? tag
+          @thread_ids[tag] = @next_id
+          @next_id += 1
+        end
 
         timestamp = time * 10**9
         timestamp = [timestamp, @last_timestamp + 1].max
         @last_timestamp = timestamp
 
-        events << { :thread => tag,
+        events << { :thread => @thread_ids[tag].to_s,
                     :ts => timestamp.to_s,
                     :attrs => record
                   }
@@ -51,9 +54,10 @@ module Scalyr
 
       threads = Array.new
 
-      thread_ids.each do |thread|
-        threads << { :id => thread,
-                     :name => "Fluentd logs for the #{thread} tag"
+
+      @thread_ids.each do |tag, id|
+        threads << { :id => id,
+                     :name => "Fluentd: #{tag}"
                    }
       end
 
