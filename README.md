@@ -46,7 +46,12 @@ Valid fields are:
    *  flush_interval - time value - the time interval to flush the buffer and send logs to Scalyr e.g. 5s, 10s etc.
    *   buffer_chunk_limit - size value - the maximum buffer chunk size before sending logs to Scalyr e.g. 64k, 1m etc.
 
-Note that fluentd tag names will be used for Scalyr thread names.  Each match block will have a unique Scalyr session id.  If you wish multiple logs to use the same session id then make sure to match all of those logs in the same block.
+
+Notes
+-----
+Each match block will have a unique Scalyr session id.  If you wish multiple logs to use the same session id then make sure to match all of those logs in the same block.
+
+fluentd tag names will be used for Scalyr thread names.
 
 If you want to sent raw logs, rather than parsed/formatted json, make sure to specify
 
