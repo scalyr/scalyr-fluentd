@@ -72,6 +72,9 @@ module Scalyr
                   :threads => threads
                 }
 
+      @session_info = Hash.new
+      @session_info[:rubyThread] = Thread.current.object_id.to_s
+
       if @session_info
         body[:sessionInfo] = @session_info
       end
