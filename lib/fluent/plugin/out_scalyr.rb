@@ -4,6 +4,7 @@ require 'json'
 require 'net/http'
 require 'net/https'
 require 'securerandom'
+require 'thread'
 
 module Scalyr
   class FluentLogger < Fluent::BufferedOutput
@@ -25,7 +26,7 @@ module Scalyr
       #need to call this before super because there doesn't seem to be any other way to
       #set the default value for the buffer_chunk_limit, which is created and configured in super
       if !conf.key? "buffer_chunk_limit"
-        conf["buffer_chunk_limit"] = "256k";
+        conf["buffer_chunk_limit"] = "256k"
       end
       super
 
@@ -33,11 +34,7 @@ module Scalyr
         $log.warn "Buffer chunk size is greater than 1Mb.  This may result in requests being rejected by Scalyr"
       end
 
-      @last_timestamp = 0
       @add_events_uri = URI @add_events
-
-      #forcibly limit the number of threads to 1 for now, because parts of the write method aren't thread safe
-      #raise Fluent::ConfigError, "num_threads is currently limited to 1. You specified #{@num_threads}." if @num_threads > 1
     end
 
     def start
@@ -45,9 +42,12 @@ module Scalyr
       #Generate a session id.  This will be called once for each <match> in fluent.conf that uses scalyr
       @session = SecureRandom.uuid
 
-      #hash of scalyr thread ids, keyed by fluentd tag name
-      @thread_ids = Hash.new
-      @next_id = 1
+      @sync = Mutex.new
+      #the following variables are all under the control of the above mutex
+        @thread_ids = Hash.new #hash of tags -> id
+        @next_id = 1 #incrementing thread id for the session
+        @last_timestamp = 0 #timestamp of most recent event
+
     end
 
     def format( tag, time, record )
@@ -130,22 +130,30 @@ module Scalyr
       events = Array.new
       chunk.msgpack_each {|(tag,time,record)|
 
-        #add a new thread id if we haven't seen this tag before
-        if !@thread_ids.key? tag
-          @thread_ids[tag] = @next_id
-          @next_id += 1
-        end
+        timestamp = self.to_nanos( time )
+        thread_id = 0
+
+        @sync.synchronize {
+          #ensure timestamp is at least 1 nanosecond greater than the last one
+          timestamp = [timestamp, @last_timestamp + 1].max
+          @last_timestamp = timestamp
+
+          #get thread id or add a new one if we haven't seen this tag before
+          if @thread_ids.key? tag
+            thread_id = @thread_ids[tag]
+          else
+            thread_id = @next_id
+            @thread_ids[tag] = thread_id
+            @next_id += 1
+          end
+        }
 
         #then update the map of threads for this chunk
-        current_threads[tag] = @thread_ids[tag]
+        current_threads[tag] = thread_id
 
-        #ensure timestamp is at least 1 nanosecond greater than the last one
-        timestamp = self.to_nanos( time )
-        timestamp = [timestamp, @last_timestamp + 1].max
-        @last_timestamp = timestamp
 
         #append to list of events
-        events << { :thread => @thread_ids[tag].to_s,
+        events << { :thread => thread_id.to_s,
                     :ts => timestamp.to_s,
                     :attrs => record
                   }
