@@ -7,7 +7,7 @@ require 'securerandom'
 require 'thread'
 
 module Scalyr
-  class FluentLogger < Fluent::BufferedOutput
+  class ScalyrOut < Fluent::BufferedOutput
     Fluent::Plugin.register_output( 'scalyr', self )
 
     config_param :api_write_token, :string
@@ -105,20 +105,21 @@ module Scalyr
       #make sure the JSON reponse has a "status" field
       if !response_hash.key? "status"
         $log.debug "JSON response does not contain status message"
-        raise Scalyr::ServerError
+        raise Scalyr::ServerError.new "JSON response does not contain status message"
       end
 
       status = response_hash["status"]
 
       if status.start_with? "error"
         if status =~ %r"/client/"i
-          raise Scalyr::ClientError
+          raise Scalyr::ClientError.new status
         else #don't check specifically for server, we assume all non-client errors are server errors
-          raise Scalyr::ServerError
+          raise Scalyr::ServerError.new status
         end
       elsif !response.code.include? "200" #response code is a string not an int
         raise Scalyr::ServerError
       end
+
     end
 
     def build_add_events_body( chunk )
