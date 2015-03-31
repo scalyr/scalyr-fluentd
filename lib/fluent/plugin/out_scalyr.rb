@@ -10,8 +10,10 @@ module Scalyr
 
     config_param :api_write_token, :string
     config_param :session_info, :hash, :default => nil
-    config_param :region, :string, :default => nil
     config_param :add_events, :string, :default => "https://www.scalyr.com/addEvents"
+    config_param :ssl_ca_bundle_path, :string, :default => "/etc/ssl/certs/ca-bundle.crt"
+    config_param :ssl_verify_peer, :bool, :default => true
+    config_param :ssl_verify_depth, :integer, :default => 5
 
     def configure( conf )
       super
@@ -81,6 +83,12 @@ module Scalyr
 
       https = Net::HTTP.new( @add_events_uri.host, @add_events_uri.port )
       https.use_ssl = true
+
+      if @ssl_verify_peer
+        https.ca_file = @ssl_ca_bundle_path
+        https.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        https.verify_depth = @ssl_verify_depth
+      end
 
       post = Net::HTTP::Post.new @add_events_uri.path
       post.add_field( 'Content-Type', 'application/json' )
