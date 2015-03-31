@@ -3,27 +3,19 @@ Scalyr plugin for Fluentd
 
 This is the scalar plugin for fluentd.
 
-It's not ready for production use yet, but has basic functionality working.
-
 Installation
 ------------
 
-###Via gemfile
-
-From the source directory run
+Run
 ```
-gem build fluent-plugin-scalyr
+rake build
 
 ```
-
-Then install the Gem using fluent's gem manager
+Which builds the gem and puts it in the pkg directory, then install the Gem using fluent's gem manager
 
 ```
-fluent-gem install fluent-plugin-scaly-<VERSION>.gem
+fluent-gem install pkg/fluent-plugin-scalyr-<VERSION>.gem
 ```
-
-###Via copying to the plugin directory
-Copy or create a symbolic link from lib/fluent/plugin/out_scalyr.rb to /etc/fluent/plugins
 
 Usage
 -----
