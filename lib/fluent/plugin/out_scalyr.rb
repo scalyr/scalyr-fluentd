@@ -17,7 +17,7 @@ module Scalyr
     config_param :ssl_verify_peer, :bool, :default => true
     config_param :ssl_verify_depth, :integer, :default => 5
 
-    config_set_default :retry_limit, 5 #try a maximum of 5 times before discarding
+    config_set_default :retry_limit, 40 #try a maximum of 40 times before discarding
     config_set_default :retry_wait, 5 #wait a minimum of 5 seconds before retrying again
     config_set_default :max_retry_wait,  30 #wait a maximum of 30 seconds per retry
     config_set_default :flush_interval, 5 #default flush interval of 5 seconds
@@ -26,7 +26,10 @@ module Scalyr
       #need to call this before super because there doesn't seem to be any other way to
       #set the default value for the buffer_chunk_limit, which is created and configured in super
       if !conf.key? "buffer_chunk_limit"
-        conf["buffer_chunk_limit"] = "256k"
+        conf["buffer_chunk_limit"] = "100k"
+      end
+      if !conf.key? "buffer_queue_limit"
+        conf["buffer_queue_limit"] = 1024
       end
       super
 
