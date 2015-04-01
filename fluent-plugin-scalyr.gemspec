@@ -7,6 +7,7 @@ Gem::Specification.new do |gem|
   gem.homepage = "https://github.com/scalyr/scalyr-fluentd"
   gem.version = File.read("VERSION").strip
   gem.authors = ["Imron Alston"]
+  gem.licenses = ["Apache-2.0"]
   gem.email = "imron@imralsoftware.com"
   gem.has_rdoc = false
   gem.platform = Gem::Platform::RUBY
@@ -15,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.executables = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   gem.require_paths = ['lib']
   gem.add_dependency "fluentd", [">= 0.10.49", "< 2"]
-  gem.add_development_dependency "rake", "~> 0.9.2"
-  gem.add_development_dependency "flexmock", "~> 1.2.0"
-  gem.add_development_dependency "bundler", "~> 1.9.1"
+  gem.add_development_dependency "rake", "~> 0.9"
+  gem.add_development_dependency "flexmock", "~> 1.2"
+  gem.add_development_dependency "bundler", "~> 1.9"
 end
