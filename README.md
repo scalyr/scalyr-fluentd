@@ -1,54 +1,108 @@
-Scalyr plugin for Fluentd
+Scalyr output plugin for Fluentd
 =========================
 
-This is the scalar plugin for fluentd.
+Overview
+--------
 
-Installation
-------------
+The **Scalyr** output plugin buffers events from fluent and posts them to [Scalyr](http://www.scalyr.com).
 
-Run
-```
-rake build
+Events are uploaded either periodly (e.g. every 5 seconds) or once the buffer reaches a certain size (e.g. 64k).
 
-```
-Which builds the gem and puts it in the pkg directory, then install the Gem using fluent's gem manager
-
-```
-fluent-gem install pkg/fluent-plugin-scalyr-<VERSION>.gem
-```
-
-Usage
------
-
-In your fluent.conf file, set up a match for any tag you'd like to send to Scalyr e.g. 
-
-```
-<match apache.access>
-  @type scalyr
-  ...
-
-</match>
-```
-
-Valid fields are:
-
-*  api_write_token - string - Your Scalyr write token (see: https://www.scalyr.com/keys)
-*  session_info - hash - A hash of { "key": "value" } pairs that will be sent in the sessionInfo section of a request to add events to Scalyr
-*  Any field from BufferedOutput e.g.
-   *  flush_interval - time value - the time interval to flush the buffer and send logs to Scalyr e.g. 5s, 10s etc.
-   *   buffer_chunk_limit - size value - the maximum buffer chunk size before sending logs to Scalyr e.g. 64k, 1m etc.
-
-
-Notes
------
-Each match block will have a unique Scalyr session id.  If you wish multiple logs to use the same session id then make sure to match all of those logs in the same block.
-
-fluentd tag names will be used for Scalyr thread names.
-
-If you want to sent raw logs, rather than parsed/formatted json, make sure to specify
+Fluentd may format log messages into json or some other format.  If you want to send raw logs to Scalyr then in your configuration <source> be sure to specify
 
 ```
   format none
 ```
 
-in your log source.
+The Scalyr output plugin assigns a unique Scalyr session id for each Fluentd <match> block.  It is recommended that a single machine doesn't create too many simultaneous Scalyr sessions, so if possible you should try to have a single match for all logs you wish to send to Scalyr.
+
+This can be done by specifying tags such as scalyr.apache, scalyr.maillog etc and matching on scalyr.\*
+
+Fluentd tag names will be used for Scalyr thread names.
+
+Configuration
+-------------
+
+The Scalyr output plugin has a number of sensible defaults so the minimum configuration only requires your Scalyr 'write logs' token.
+
+```
+<match scalyr.*>
+  type @scalyr
+  api_write_token YOUR_SCALYR_WRITE_LOGS_TOKEN
+</match>
+```
+
+The following configuration options are also supported:
+
+```
+<match scalyr.*>
+  type @scalyr
+
+  #scalyr specific options
+  api_write_token YOUR_SCALYR_WRITE_TOKEN
+  session_info { "host":"some-host",
+                 "custom":"your custom session info"
+               }
+
+  add_events https://www.scalyr.com/addEvents
+  ssl_ca_bundle_path /etc/ssl/certs/ca-bundle.crt
+  ssl_verify_peer true
+  ssl_verify_depth 5
+
+  #buffered output options
+  retry_limit 40
+  retry_wait 5s
+  max_retry_wait 30s
+  flush_interval 5s
+  buffer_chunk_limit 100k
+  buffer_queue_limit 1024
+  num_threads 1
+
+</match>
+```
+
+####Scalyr specific options
+
+***api_write_token*** Your Scalyr write logs token. See [here](http://www.scalyr.com/keys) for more details.  This value **must** be specified.
+
+
+***session_info*** A JSON hash containing custom session info you want to include with each log request.  This value is optional and defaults to *nil*.
+
+***ssl_ca_bundle_path*** A path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.  **Note:** if the certificate bundle does not contain a certificate chain that verifies the Scalyr SSL certificate then all requests to Scalyr will fail unless ***ssl_verify_peer*** is set to false.
+
+***ssl_verify_peer*** Verify SSL certificates when sending requests to Scalyr.  This value is optional, and defaults to *true*.
+
+***ssl_verify_depth*** The depth to use when verifying certificates.  This value is optional, and defaults to *5*.
+
+
+####BufferedOutput options (inherited from Fluent::BufferedOutput)
+
+***retry_limit*** The maximum number of times to retry a failed post request before giving up.  Defaults to *40*.
+
+***retry_wait*** The initial time to wait before retrying a failed request.  Defaults to *5 seconds*.  Wait times will increase up to a maximum of ***max_retry_wait***
+
+***max_retry_wait*** The maximum time to wait between retrying failed requests.  Defaults to *30 seconds*.  **Note:** This is not the total maximum time of all retry waits, but rather the maximum time to wait for a single retry.
+
+***flush_interval*** How often to upload logs to Scalyr.  Defaults to *5 seconds*.
+
+***buffer_chunk_limit*** The maximum amount of log data to send to Scalyr in a single request.  Defaults to *100KB*.  **Note:** if you set this value too large, then Scalyr may reject your requests.  Requests smaller than 1MB will typically be accepted by Scalyr, but note that the 1MB limit also includes the entire request body and all associated JSON keys and punctuation, which may be considerably larger than the raw log data.
+
+***buffer_queue_limit*** The maximum number of chunks to buffer before dropping new log requests.  Defaults to *1024*.  Combines with ***buffer_chunk_limit*** to give you the total amount of buffer to use in the event of request failures before dropping requests.
+
+***num_threads*** The number of threads to use to upload logs.  Defaults to *1*.  In the event where there are multiple unsent buffer chunks in the queue, set this option to > 1 to use multiple threads to send the data.  **Note:** be careful about setting this value too high because if too many requests come in over too short a timespan, Scalyr may start rejecting requests.
+
+Installation
+------------
+
+Run
+
+```
+rake build
+
+```
+
+Which builds the gem and puts it in the pkg directory, then install the Gem using fluent's gem manager
+
+```
+fluent-gem install pkg/fluent-plugin-scalyr-<VERSION>.gem
+```
