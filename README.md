@@ -63,34 +63,34 @@ The following configuration options are also supported:
 
 ####Scalyr specific options
 
-***api_write_token*** Your Scalyr write logs token. See [here](http://www.scalyr.com/keys) for more details.  This value **must** be specified.
+***api_write_token*** - your Scalyr write logs token. See [here](http://www.scalyr.com/keys) for more details.  This value **must** be specified.
 
-***session_info*** A JSON hash containing custom session info you want to include with each log request.  This value is optional and defaults to *nil*.
+***session_info*** - a JSON hash containing custom session info you want to include with each log request.  This value is optional and defaults to *nil*.
 
-***add_events*** The URL endpoint for adding events to Scalyr. This value is optional and defaults to https://www.scalyr.com/addEvents
+***add_events*** - the URL endpoint for adding events to Scalyr. This value is optional and defaults to https://www.scalyr.com/addEvents
 
-***ssl_ca_bundle_path*** A path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.  **Note:** if the certificate bundle does not contain a certificate chain that verifies the Scalyr SSL certificate then all requests to Scalyr will fail unless ***ssl_verify_peer*** is set to false.
+***ssl_ca_bundle_path*** - a path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.  **Note:** if the certificate bundle does not contain a certificate chain that verifies the Scalyr SSL certificate then all requests to Scalyr will fail unless ***ssl_verify_peer*** is set to false.
 
-***ssl_verify_peer*** Verify SSL certificates when sending requests to Scalyr.  This value is optional, and defaults to *true*.
+***ssl_verify_peer*** - verify SSL certificates when sending requests to Scalyr.  This value is optional, and defaults to *true*.
 
-***ssl_verify_depth*** The depth to use when verifying certificates.  This value is optional, and defaults to *5*.
+***ssl_verify_depth*** - the depth to use when verifying certificates.  This value is optional, and defaults to *5*.
 
 
 ####BufferedOutput options (inherited from Fluent::BufferedOutput)
 
-***retry_limit*** The maximum number of times to retry a failed post request before giving up.  Defaults to *40*.
+***retry_limit*** - the maximum number of times to retry a failed post request before giving up.  Defaults to *40*.
 
-***retry_wait*** The initial time to wait before retrying a failed request.  Defaults to *5 seconds*.  Wait times will increase up to a maximum of ***max_retry_wait***
+***retry_wait*** - the initial time to wait before retrying a failed request.  Defaults to *5 seconds*.  Wait times will increase up to a maximum of ***max_retry_wait***
 
-***max_retry_wait*** The maximum time to wait between retrying failed requests.  Defaults to *30 seconds*.  **Note:** This is not the total maximum time of all retry waits, but rather the maximum time to wait for a single retry.
+***max_retry_wait*** - the maximum time to wait between retrying failed requests.  Defaults to *30 seconds*.  **Note:** This is not the total maximum time of all retry waits, but rather the maximum time to wait for a single retry.
 
-***flush_interval*** How often to upload logs to Scalyr.  Defaults to *5 seconds*.
+***flush_interval*** - how often to upload logs to Scalyr.  Defaults to *5 seconds*.
 
-***buffer_chunk_limit*** The maximum amount of log data to send to Scalyr in a single request.  Defaults to *100KB*.  **Note:** if you set this value too large, then Scalyr may reject your requests.  Requests smaller than 1MB will typically be accepted by Scalyr, but note that the 1MB limit also includes the entire request body and all associated JSON keys and punctuation, which may be considerably larger than the raw log data.
+***buffer_chunk_limit*** - the maximum amount of log data to send to Scalyr in a single request.  Defaults to *100KB*.  **Note:** if you set this value too large, then Scalyr may reject your requests.  Requests smaller than 1MB will typically be accepted by Scalyr, but note that the 1MB limit also includes the entire request body and all associated JSON keys and punctuation, which may be considerably larger than the raw log data.
 
-***buffer_queue_limit*** The maximum number of chunks to buffer before dropping new log requests.  Defaults to *1024*.  Combines with ***buffer_chunk_limit*** to give you the total amount of buffer to use in the event of request failures before dropping requests.
+***buffer_queue_limit*** - the maximum number of chunks to buffer before dropping new log requests.  Defaults to *1024*.  Combines with ***buffer_chunk_limit*** to give you the total amount of buffer to use in the event of request failures before dropping requests.
 
-***num_threads*** The number of threads to use to upload logs.  Defaults to *1*.  In the event where there are multiple unsent buffer chunks in the queue, set this option to &gt; 1 to use multiple threads to send the data.  **Note:** be careful about setting this value too high because if too many requests come in over too short a timespan, Scalyr may start rejecting requests.
+***num_threads*** - the number of threads to use to upload logs.  Defaults to *1*.  In the event where there are multiple unsent buffer chunks in the queue, set this option to &gt; 1 to use multiple threads to send the data.  **Note:** be careful about setting this value too high because if too many requests come in over too short a timespan, Scalyr may start rejecting requests.
 
 Installation
 ------------
