@@ -21,6 +21,17 @@ class ScalyrOutTest < Test::Unit::TestCase
     assert_equal( "JSON response does not contain status message", exception.message )
   end
 
+  def test_handle_response_discard_buffer
+    d = create_driver
+    response = flexmock( Net::HTTPResponse, :code => '200', :body =>'{ "message":"An invalid message", "status":"error/server/discardBuffer" }'  )
+    logger = flexmock( $log )
+    logger.should_receive( :warn ).with( /buffer dropped/i )
+    assert_nothing_raised( Scalyr::ServerError, Scalyr::ClientError, "Nothing should be raised when discarding the buffer" ) {
+      d.instance.handle_response( response )
+    }
+
+  end
+
   def test_handle_response_unknown_error
     d = create_driver
     response = flexmock( Net::HTTPResponse, :code => '200', :body =>'{ "message":"An invalid message", "status":"error/other" }'  )

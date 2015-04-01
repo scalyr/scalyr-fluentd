@@ -113,8 +113,10 @@ module Scalyr
 
       status = response_hash["status"]
 
-      if status.start_with? "error"
-        if status =~ %r"/client/"i
+      if status != "success"
+        if status =~ /discardBuffer/
+          $log.warn "Received 'discardBuffer' message from server.  Buffer dropped."
+        elsif status =~ %r"/client/"i
           raise Scalyr::ClientError.new status
         else #don't check specifically for server, we assume all non-client errors are server errors
           raise Scalyr::ServerError.new status
