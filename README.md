@@ -8,13 +8,13 @@ The **Scalyr** output plugin buffers events from fluent and posts them to [Scaly
 
 Events are uploaded either periodly (e.g. every 5 seconds) or once the buffer reaches a certain size (e.g. 64k).
 
-Fluentd may format log messages into json or some other format.  If you want to send raw logs to Scalyr then in your configuration <source> be sure to specify
+Fluentd may format log messages into json or some other format.  If you want to send raw logs to Scalyr then in your configuration &lt;source&gt; be sure to specify
 
 ```
   format none
 ```
 
-The Scalyr output plugin assigns a unique Scalyr session id for each Fluentd <match> block.  It is recommended that a single machine doesn't create too many simultaneous Scalyr sessions, so if possible you should try to have a single match for all logs you wish to send to Scalyr.
+The Scalyr output plugin assigns a unique Scalyr session id for each Fluentd &lt;match&gt; block.  It is recommended that a single machine doesn't create too many simultaneous Scalyr sessions, so if possible you should try to have a single match for all logs you wish to send to Scalyr.
 
 This can be done by specifying tags such as scalyr.apache, scalyr.maillog etc and matching on scalyr.\*
 
@@ -89,7 +89,7 @@ The following configuration options are also supported:
 
 ***buffer_queue_limit*** The maximum number of chunks to buffer before dropping new log requests.  Defaults to *1024*.  Combines with ***buffer_chunk_limit*** to give you the total amount of buffer to use in the event of request failures before dropping requests.
 
-***num_threads*** The number of threads to use to upload logs.  Defaults to *1*.  In the event where there are multiple unsent buffer chunks in the queue, set this option to > 1 to use multiple threads to send the data.  **Note:** be careful about setting this value too high because if too many requests come in over too short a timespan, Scalyr may start rejecting requests.
+***num_threads*** The number of threads to use to upload logs.  Defaults to *1*.  In the event where there are multiple unsent buffer chunks in the queue, set this option to &gt; 1 to use multiple threads to send the data.  **Note:** be careful about setting this value too high because if too many requests come in over too short a timespan, Scalyr may start rejecting requests.
 
 Installation
 ------------
