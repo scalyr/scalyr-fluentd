@@ -97,6 +97,13 @@ The cURL project maintains CA certificate bundles automatically converted from m
 
 ***num_threads*** - the number of threads to use to upload logs.  Defaults to *1*.  In the event where there are multiple unsent buffer chunks in the queue, set this option to &gt; 1 to use multiple threads to send the data.  **Note:** be careful about setting this value too high because if too many requests come in over too short a timespan, Scalyr may start rejecting requests.
 
+Secondary Logging
+-----------------
+
+Fluentd also supports &lt;secondary&gt; logging for all buffered output for when the primary output fails (see the Fluentd [documentation](http://docs.fluentd.org/articles/output-plugin-overview#secondary-output) for more details).  This is also supported by the Scalyr output plugin.
+
+**Note:** There are certain conditions that may cause the Scalyr plugin to discard a buffer, without logging it to secondary output.  Notably, if an errant configuration is flooding the Scalyr servers
+
 Installation
 ------------
 

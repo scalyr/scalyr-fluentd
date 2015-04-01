@@ -76,9 +76,17 @@ module Scalyr
 
     #called by fluentd when a chunk of log messages is ready
     def write( chunk )
-      body = self.build_add_events_body( chunk )
-      response = self.post_request( @add_events_uri, body )
-      self.handle_response( response )
+      begin
+        body = self.build_add_events_body( chunk )
+        response = self.post_request( @add_events_uri, body )
+        self.handle_response( response )
+      rescue OpenSSL::SSL::SSLError => e
+        if e.message.include? "certificate verify failed"
+          $log.warn "SSL certificate verification failed.  Please make sure your certificate bundle is configured correctly and points to a valid file. You can configure this with the ssl_ca_bundle_path configuration option. The current value of ssl_ca_bundle_path is '#{@ssl_ca_bundle_path}'"
+        end
+        $log.warn e.message
+        $log.warn "Discarding buffer chunk without retrying or logging to <secondary>"
+      end
     end
 
 
