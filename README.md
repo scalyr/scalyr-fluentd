@@ -69,7 +69,9 @@ The following configuration options are also supported:
 
 ***add_events*** - the URL endpoint for adding events to Scalyr. This value is optional and defaults to https://www.scalyr.com/addEvents
 
-***ssl_ca_bundle_path*** - a path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.  **Note:** if the certificate bundle does not contain a certificate chain that verifies the Scalyr SSL certificate then all requests to Scalyr will fail unless ***ssl_verify_peer*** is set to false.
+***ssl_ca_bundle_path*** - a path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.
+
+**Note:** if the certificate bundle does not contain a certificate chain that verifies the Scalyr SSL certificate then all requests to Scalyr will fail unless ***ssl_verify_peer*** is set to false.
 
 ***ssl_verify_peer*** - verify SSL certificates when sending requests to Scalyr.  This value is optional, and defaults to *true*.
 
