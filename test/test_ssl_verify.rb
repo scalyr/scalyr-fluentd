@@ -25,9 +25,11 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
     time = Time.parse("2015-04-01 10:00:00 UTC").to_i
     d.emit( { "a" => 1 }, time )
 
-    exception = assert_raises( OpenSSL::SSL::SSLError, "Invalid certificates should cause request failure" ) {
+    logger = flexmock( $log )
+    logger.should_receive( :warn ).with( /certificate verification failed/i )
+    logger.should_receive( :warn ).with( /certificate verify failed/i )
+    logger.should_receive( :warn ).with( /discarding buffer/i )
+
       d.run
-    }
-    assert_match /certificate verify failed/i, exception.message
   end
 end

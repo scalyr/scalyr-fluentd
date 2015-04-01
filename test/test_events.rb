@@ -17,6 +17,7 @@
 
 
 require 'helper'
+require 'fluent/event'
 
 class EventsTest < Scalyr::ScalyrOutTest
 
@@ -116,15 +117,19 @@ class EventsTest < Scalyr::ScalyrOutTest
     response = flexmock( Net::HTTPResponse, :code => '200', :body =>'{ "status":"success" }'  )
     mock = flexmock( d.instance )
 
-    time = Time.parse("2015-04-01 10:00:00 UTC").to_i
-    d.tag = "test1"
-    d.emit( { "a" => 1 }, time )
+    entries = []
 
-    #fluentd testing doesn't have an easy way to test multiple tags
-    #for a single run so just test the one for now
-    
-    #d.tag = "test2"
-    #d.emit( { "a" => 2 }, time )
+    time = Time.parse("2015-04-01 10:00:00 UTC").to_i
+    entries << [time, { "a" => 1 }]
+
+    es = Fluent::ArrayEventStream.new(entries)
+    buffer = d.instance.format_stream("test1", es)
+
+    chunk = d.instance.buffer.new_chunk('')
+    chunk << buffer
+
+    buffer = d.instance.format_stream("test2", es)
+    chunk << buffer
 
     mock.should_receive( :post_request ).with( 
       URI,
@@ -133,13 +138,16 @@ class EventsTest < Scalyr::ScalyrOutTest
         events = body['events']
         threads = body['threads']
 
-        assert_equal( 1, threads.length, "Expecting 1 thread, #{threads.length} found" )
-        assert_equal( 1, events.length, "Expecting 1 event, #{events.length} found" )
+        assert_equal( 2, threads.length, "Expecting 2 threads, #{threads.length} found" )
+        assert_equal( 2, events.length, "Expecting 2 events, #{events.length} found" )
         assert_equal( events[0]['thread'], threads[0]['id'].to_s, "thread id should match event thread id" )
+        assert_equal( events[1]['thread'], threads[1]['id'].to_s, "thread id should match event thread id" )
       }
-      ).and_return( response )
+      ).at_least.once.and_return( response )
 
-    d.run
+    d.instance.start
+    d.instance.write( chunk )
+    d.instance.shutdown
   end
 
 end
