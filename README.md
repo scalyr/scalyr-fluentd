@@ -65,8 +65,9 @@ The following configuration options are also supported:
 
 ***api_write_token*** Your Scalyr write logs token. See [here](http://www.scalyr.com/keys) for more details.  This value **must** be specified.
 
-
 ***session_info*** A JSON hash containing custom session info you want to include with each log request.  This value is optional and defaults to *nil*.
+
+***add_events*** The URL endpoint for adding events to Scalyr. This value is optional and defaults to https://www.scalyr.com/addEvents
 
 ***ssl_ca_bundle_path*** A path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.  **Note:** if the certificate bundle does not contain a certificate chain that verifies the Scalyr SSL certificate then all requests to Scalyr will fail unless ***ssl_verify_peer*** is set to false.
 
