@@ -1,0 +1,24 @@
+<match scalyr.*>
+  @type scalyr
+  api_write_token YOUR_WRITE_LOGS_API_TOKEN
+
+  ##Scalyr specific options
+  # session_info { "host":"some-host",
+  #                "custom":"your custom session info"
+  #              }
+  # add_events https://www.scalyr.com/addEvents
+  # ssl_ca_bundle_path /etc/ssl/certs/ca-bundle.crt
+  # ssl_verify_peer true
+  # ssl_verify_depth 5
+
+
+  ##BufferedOutput options
+  # retry_limit 40
+  # retry_wait 5s
+  # max_retry_wait 30s
+  # flush_interval 5s
+  # buffer_chunk_limit 100k
+  # buffer_queue_limit 1024
+  # num_threads 1
+
+</match>
