@@ -77,7 +77,7 @@ The following configuration options are also supported:
 
 >2015-04-01 08:47:05 -0400 [warn]: plugin/out_scalyr.rb:87:rescue in write: SSL_connect returned=1 errno=0 state=SSLv3 read server certificate B: certificate verify failed
 
->2015-04-01 08:47:05 -0400 [warn]: plugin/out_scalyr.rb:88:rescue in write: Discarding buffer chunk without retrying or logging to <secondary>
+>2015-04-01 08:47:05 -0400 [warn]: plugin/out_scalyr.rb:88:rescue in write: Discarding buffer chunk without retrying or logging to &ltsecondary&gt
 
 The cURL project maintains CA certificate bundles automatically converted from mozilla.org [here](http://curl.haxx.se/docs/caextract.html).
 
