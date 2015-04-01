@@ -72,8 +72,11 @@ The following configuration options are also supported:
 ***ssl_ca_bundle_path*** - a path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.
 
 **Note:** if the certificate bundle does not contain a certificate chain that verifies the Scalyr SSL certificate then all requests to Scalyr will fail unless ***ssl_verify_peer*** is set to false.  If you suspect logging to Scalyr is failing due to an invalid certificate chain, you can grep through the Fluentd output for warnings that contain the message 'certificate verification failed'.  The full text of such warnings will look something like this:
+
 >2015-04-01 08:47:05 -0400 [warn]: plugin/out_scalyr.rb:85:rescue in write: SSL certificate verification failed.  Please make sure your certificate bundle is configured correctly and points to a valid file. You can configure this with the ssl_ca_bundle_path configuration option. The current value of ssl_ca_bundle_path is '/etc/ssl/certs/ca-bundle.crt'
+
 >2015-04-01 08:47:05 -0400 [warn]: plugin/out_scalyr.rb:87:rescue in write: SSL_connect returned=1 errno=0 state=SSLv3 read server certificate B: certificate verify failed
+
 >2015-04-01 08:47:05 -0400 [warn]: plugin/out_scalyr.rb:88:rescue in write: Discarding buffer chunk without retrying or logging to <secondary>
 
 The cURL project maintains CA certificate bundles automatically converted from mozilla.org [here](http://curl.haxx.se/docs/caextract.html).
