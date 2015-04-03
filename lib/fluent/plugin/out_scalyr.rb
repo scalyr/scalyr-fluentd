@@ -194,7 +194,7 @@ module Scalyr
       #build the scalyr thread objects
       threads = Array.new
       current_threads.each do |tag, id|
-        threads << { :id => id,
+        threads << { :id => id.to_s,
                      :name => "Fluentd: #{tag}"
                    }
       end
