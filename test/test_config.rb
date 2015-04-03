@@ -22,7 +22,7 @@ class ConfigTest  < Scalyr::ScalyrOutTest
 
   def test_default_params
     d = create_driver
-    assert_nil( d.instance.session_info, "Default sessionInfo not nil" )
+    assert_nil( d.instance.server_attributes, "Default server_attributes not nil" )
     assert( d.instance.ssl_verify_peer, "Default ssl_verify_peer should be true" )
 
     #check default buffer limits because they are set outside of the config_set_default
@@ -50,9 +50,9 @@ class ConfigTest  < Scalyr::ScalyrOutTest
     assert_equal( 10, d.instance.ssl_verify_depth, "Config failed to set ssl_verify_depth" )
   end
 
-  def test_configure_session_info
-    d = create_driver CONFIG + 'session_info { "test":"value" }'
-    assert_equal( "value", d.instance.session_info["test"], "Config failed to set session info" )
+  def test_configure_server_attributes
+    d = create_driver CONFIG + 'server_attributes { "test":"value" }'
+    assert_equal( "value", d.instance.server_attributes["test"], "Config failed to set server_attributes" )
   end
 end
 

@@ -28,7 +28,7 @@ module Scalyr
     Fluent::Plugin.register_output( 'scalyr', self )
 
     config_param :api_write_token, :string
-    config_param :session_info, :hash, :default => nil
+    config_param :server_attributes, :hash, :default => nil
     config_param :scalyr_server, :string, :default => "https://agent.scalyr.com/"
     config_param :ssl_ca_bundle_path, :string, :default => "/etc/ssl/certs/ca-bundle.crt"
     config_param :ssl_verify_peer, :bool, :default => true
@@ -215,9 +215,9 @@ module Scalyr
                   :threads => threads
                 }
 
-      #add session_info hash if it exists
-      if @session_info
-        body[:sessionInfo] = @session_info
+      #add server_attributes hash if it exists
+      if @server_attributes
+        body[:sessionInfo] = @server_attributes
       end
 
       body.to_json

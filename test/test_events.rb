@@ -84,8 +84,8 @@ class EventsTest < Scalyr::ScalyrOutTest
     d.run
   end
 
-  def test_build_add_events_body_with_session_info
-    d = create_driver CONFIG + 'session_info { "test":"value" }'
+  def test_build_add_events_body_with_server_attributes
+    d = create_driver CONFIG + 'server_attributes { "test":"value" }'
 
     response = flexmock( Net::HTTPResponse, :code => '200', :body =>'{ "status":"success" }'  )
     mock = flexmock( d.instance )

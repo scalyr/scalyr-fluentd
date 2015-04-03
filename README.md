@@ -18,7 +18,7 @@ The Scalyr output plugin assigns a unique Scalyr session id for each Fluentd &lt
 
 This can be done by specifying tags such as scalyr.apache, scalyr.maillog etc and matching on scalyr.\*
 
-Fluentd tag names will be used for Scalyr thread names.
+Fluentd tag names will be used for the logfile name in Scalyr.
 
 Configuration
 -------------
@@ -40,9 +40,11 @@ The following configuration options are also supported:
 
   #scalyr specific options
   api_write_token YOUR_SCALYR_WRITE_TOKEN
-  session_info { "host":"some-host",
-                 "custom":"your custom session info"
-               }
+  server_attributes {
+    "serverHost": "front-1",
+    "serverType": "frontend",
+    "region":     "us-east-1"
+  }
 
   scalyr_server https://agent.scalyr.com/
   ssl_ca_bundle_path /etc/ssl/certs/ca-bundle.crt
@@ -65,7 +67,7 @@ The following configuration options are also supported:
 
 ***api_write_token*** - your Scalyr write logs token. See [here](http://www.scalyr.com/keys) for more details.  This value **must** be specified.
 
-***session_info*** - a JSON hash containing custom session info you want to include with each log request.  This value is optional and defaults to *nil*.
+***server_attributes*** - a JSON hash containing custom server attributes you want to include with each log request.  This value is optional and defaults to *nil*.
 
 ***scalyr_server*** - the Scalyr sever to send API requests to. This value is optional and defaults to https://agent.scalyr.com/
 
