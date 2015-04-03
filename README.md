@@ -44,7 +44,7 @@ The following configuration options are also supported:
                  "custom":"your custom session info"
                }
 
-  add_events https://www.scalyr.com/addEvents
+  scalyr_server https://agent.scalyr.com/
   ssl_ca_bundle_path /etc/ssl/certs/ca-bundle.crt
   ssl_verify_peer true
   ssl_verify_depth 5
@@ -67,7 +67,7 @@ The following configuration options are also supported:
 
 ***session_info*** - a JSON hash containing custom session info you want to include with each log request.  This value is optional and defaults to *nil*.
 
-***add_events*** - the URL endpoint for adding events to Scalyr. This value is optional and defaults to https://www.scalyr.com/addEvents
+***scalyr_server*** - the Scalyr sever to send API requests to. This value is optional and defaults to https://agent.scalyr.com/
 
 ***ssl_ca_bundle_path*** - a path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.
 

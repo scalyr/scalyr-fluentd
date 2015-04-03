@@ -35,6 +35,11 @@ class ConfigTest  < Scalyr::ScalyrOutTest
     assert( !d.instance.ssl_verify_peer, "Config failed to set ssl_verify_peer" )
   end
 
+  def test_scalyr_server_adding_trailing_slash
+    d = create_driver CONFIG + 'scalyr_server http://www.example.com'
+    assert_equal( "http://www.example.com/", d.instance.scalyr_server, "Missing trailing slash for scalyr_server" )
+  end
+
   def test_configure_ssl_ca_bundle_path
     d = create_driver CONFIG + 'ssl_ca_bundle_path /test/ca-bundle.crt'
     assert_equal( "/test/ca-bundle.crt", d.instance.ssl_ca_bundle_path, "Config failed to set ssl_ca_bundle_path" )

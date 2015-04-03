@@ -6,7 +6,7 @@
   # session_info { "host":"some-host",
   #                "custom":"your custom session info"
   #              }
-  # add_events https://www.scalyr.com/addEvents
+  # scalyr_server https://agent.scalyr.com/
   # ssl_ca_bundle_path /etc/ssl/certs/ca-bundle.crt
   # ssl_verify_peer true
   # ssl_verify_depth 5

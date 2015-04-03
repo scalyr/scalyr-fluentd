@@ -29,7 +29,7 @@ module Scalyr
 
     config_param :api_write_token, :string
     config_param :session_info, :hash, :default => nil
-    config_param :add_events, :string, :default => "https://www.scalyr.com/addEvents"
+    config_param :scalyr_server, :string, :default => "https://agent.scalyr.com/"
     config_param :ssl_ca_bundle_path, :string, :default => "/etc/ssl/certs/ca-bundle.crt"
     config_param :ssl_verify_peer, :bool, :default => true
     config_param :ssl_verify_depth, :integer, :default => 5
@@ -54,7 +54,9 @@ module Scalyr
         $log.warn "Buffer chunk size is greater than 1Mb.  This may result in requests being rejected by Scalyr"
       end
 
-      @add_events_uri = URI @add_events
+      @scalyr_server << '/' unless @scalyr_server.end_with?('/')
+
+      @add_events_uri = URI @scalyr_server + "addEvents"
     end
 
     def start
