@@ -42,6 +42,8 @@ class EventsTest < Scalyr::ScalyrOutTest
     attrs = { "a" => 1 }
     d.emit( attrs, time )
 
+    attrs["logfile"] = "/fluentd/test";
+
     mock.should_receive( :post_request ).with( 
       URI,
       on { |request_body|
@@ -54,6 +56,27 @@ class EventsTest < Scalyr::ScalyrOutTest
         assert( body.key?( "threads" ), "missing threads field" )
         assert_equal( 1, body['events'].length, "Only expecting 1 event" )
         assert_equal( d.instance.to_nanos( time ), body['events'][0]['ts'].to_i, "Event timestamp differs" )
+        assert_equal( attrs, body['events'][0]['attrs'], "Value of attrs differs from log" )
+      }
+      ).and_return( response )
+
+    d.run
+  end
+
+  def test_build_add_events_body_dont_override_logfile_field
+    d = create_driver
+    response = flexmock( Net::HTTPResponse, :code => '200', :body =>'{ "status":"success" }'  )
+    mock = flexmock( d.instance )
+
+    time = Time.parse("2015-04-01 10:00:00 UTC").to_i
+    attrs = { "a" => 1 }
+    attrs["logfile"] = "/some/log/file";
+    d.emit( attrs, time )
+
+    mock.should_receive( :post_request ).with(
+      URI,
+      on { |request_body|
+        body = JSON.parse( request_body )
         assert_equal( attrs, body['events'][0]['attrs'], "Value of attrs differs from log" )
       }
       ).and_return( response )

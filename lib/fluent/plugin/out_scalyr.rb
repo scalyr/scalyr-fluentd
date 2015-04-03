@@ -182,6 +182,11 @@ module Scalyr
         #then update the map of threads for this chunk
         current_threads[tag] = thread_id
 
+        #add a logfile field if one doesn't exist
+        if !record.key? "logfile"
+          record["logfile"] = "/fluentd/#{tag}"
+        end
+
 
         #append to list of events
         events << { :thread => thread_id.to_s,
