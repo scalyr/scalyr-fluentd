@@ -69,7 +69,7 @@ The following configuration options are also supported:
 
 ***server_attributes*** - a JSON hash containing custom server attributes you want to include with each log request.  This value is optional and defaults to *nil*.
 
-***scalyr_server*** - the Scalyr sever to send API requests to. This value is optional and defaults to https://agent.scalyr.com/
+***scalyr_server*** - the Scalyr server to send API requests to. This value is optional and defaults to https://agent.scalyr.com/
 
 ***ssl_ca_bundle_path*** - a path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.
 
