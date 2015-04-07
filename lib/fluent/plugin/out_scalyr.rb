@@ -17,11 +17,10 @@
 
 
 require 'fluent/plugin/scalyr-exceptions'
+require 'fluent/plugin/scalyr-session'
 require 'json'
 require 'net/http'
 require 'net/https'
-require 'securerandom'
-require 'thread'
 
 module Scalyr
   class ScalyrOut < Fluent::BufferedOutput
@@ -61,15 +60,7 @@ module Scalyr
 
     def start
       super
-      #Generate a session id.  This will be called once for each <match> in fluent.conf that uses scalyr
-      @session = SecureRandom.uuid
-
-      @sync = Mutex.new
-      #the following variables are all under the control of the above mutex
-        @thread_ids = Hash.new #hash of tags -> id
-        @next_id = 1 #incrementing thread id for the session
-        @last_timestamp = 0 #timestamp of most recent event
-
+      $log.info "Starting new Scalyr plugin - Session ID is: #{Scalyr::Session.instance.session}"
     end
 
     def format( tag, time, record )
@@ -166,20 +157,8 @@ module Scalyr
         timestamp = self.to_nanos( time )
         thread_id = 0
 
-        @sync.synchronize {
-          #ensure timestamp is at least 1 nanosecond greater than the last one
-          timestamp = [timestamp, @last_timestamp + 1].max
-          @last_timestamp = timestamp
-
-          #get thread id or add a new one if we haven't seen this tag before
-          if @thread_ids.key? tag
-            thread_id = @thread_ids[tag]
-          else
-            thread_id = @next_id
-            @thread_ids[tag] = thread_id
-            @next_id += 1
-          end
-        }
+        #get the laatest timestamp and scalyr thread_id for this tag
+        timestamp, thread_id = Scalyr::Session.instance.get_timestamp_and_id( timestamp, tag )
 
         #then update the map of threads for this chunk
         current_threads[tag] = thread_id
@@ -189,13 +168,11 @@ module Scalyr
           record["logfile"] = "/fluentd/#{tag}"
         end
 
-
         #append to list of events
         events << { :thread => thread_id.to_s,
                     :ts => timestamp.to_s,
                     :attrs => record
                   }
-
       }
 
       #build the scalyr thread objects
@@ -210,7 +187,7 @@ module Scalyr
 
       body = { :token => @api_write_token,
                   :client_timestamp => current_time.to_s,
-                  :session => @session,
+                  :session => Scalyr::Session.instance.session,
                   :events => events,
                   :threads => threads
                 }
