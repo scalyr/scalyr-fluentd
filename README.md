@@ -102,7 +102,7 @@ The cURL project maintains CA certificate bundles automatically converted from m
 
 ***buffer_queue_limit*** - the maximum number of chunks to buffer before dropping new log requests.  Defaults to *1024*.  Combines with ***buffer_chunk_limit*** to give you the total amount of buffer to use in the event of request failures before dropping requests.
 
-***num_threads*** - the number of threads to use to upload logs.  Defaults to *1*.  In the event where there are multiple unsent buffer chunks in the queue, set this option to &gt; 1 to use multiple threads to send the data.  **Note:** be careful about setting this value too high because if too many requests come in over too short a timespan, Scalyr may start rejecting requests.
+***num_threads*** - the number of threads to use to upload logs.  This is currently fixed to 1 will cause fluentd to fail with a ConfigError if set to anything greater.  
 
 Secondary Logging
 -----------------

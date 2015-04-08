@@ -57,6 +57,9 @@ module Scalyr
       @scalyr_server << '/' unless @scalyr_server.end_with?('/')
 
       @add_events_uri = URI @scalyr_server + "addEvents"
+
+      #forcibly limit the number of threads to 1 for now, to ensure requests always have incrementing timestamps
+      raise Fluent::ConfigError, "num_threads is currently limited to 1. You specified #{@num_threads}." if @num_threads > 1
     end
 
     def start
