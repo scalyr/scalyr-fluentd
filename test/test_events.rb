@@ -57,6 +57,7 @@ class EventsTest < Scalyr::ScalyrOutTest
         assert_equal( 1, body['events'].length, "Only expecting 1 event" )
         assert_equal( d.instance.to_nanos( time ), body['events'][0]['ts'].to_i, "Event timestamp differs" )
         assert_equal( attrs, body['events'][0]['attrs'], "Value of attrs differs from log" )
+        true
       }
       ).and_return( response )
 
@@ -78,6 +79,7 @@ class EventsTest < Scalyr::ScalyrOutTest
       on { |request_body|
         body = JSON.parse( request_body )
         assert_equal( attrs, body['events'][0]['attrs'], "Value of attrs differs from log" )
+        true
       }
       ).and_return( response )
 
@@ -100,6 +102,7 @@ class EventsTest < Scalyr::ScalyrOutTest
         body = JSON.parse( request_body )
         assert( body.key?( "sessionInfo"), "sessionInfo field set, but no sessionInfo" )
         assert_equal( "value", body["sessionInfo"]["test"] )
+        true
       }
       ).and_return( response )
 
@@ -129,6 +132,8 @@ class EventsTest < Scalyr::ScalyrOutTest
 
         #test earlier timestamps are increased
         assert events[2]['ts'].to_i > events[1]['ts'].to_i, "Event timestamps must increase"
+
+        true
       }
       ).and_return( response )
 
@@ -165,6 +170,7 @@ class EventsTest < Scalyr::ScalyrOutTest
         assert_equal( 2, events.length, "Expecting 2 events, #{events.length} found" )
         assert_equal( events[0]['thread'], threads[0]['id'].to_s, "thread id should match event thread id" )
         assert_equal( events[1]['thread'], threads[1]['id'].to_s, "thread id should match event thread id" )
+        true
       }
       ).at_least.once.and_return( response )
 
