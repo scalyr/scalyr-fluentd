@@ -6,7 +6,7 @@ Overview
 
 The **Scalyr** output plugin buffers events from fluent and posts them to [Scalyr](http://www.scalyr.com).
 
-Events are uploaded either periodly (e.g. every 5 seconds) or once the buffer reaches a certain size (e.g. 64k).
+Events are uploaded either periodically (e.g. every 5 seconds) or once the buffer reaches a certain size (e.g. 64k).
 
 Fluentd may format log messages into json or some other format.  If you want to send raw logs to Scalyr then in your configuration &lt;source&gt; be sure to specify
 
@@ -20,7 +20,21 @@ This can be done by specifying tags such as scalyr.apache, scalyr.maillog etc an
 
 Fluentd tag names will be used for the logfile name in Scalyr.
 
-Configuration
+Scalyr Parsers and Custom Fields
+--------------------------------
+
+You may also need to specify a Scalyr parser for your log message or add custom fields to each log event. This can be done using Fluentd's filter mechanism, in particular the [record_transformer filter](http://docs.fluentd.org/articles/filter_record_transformer).  For example, if you want to use Scalyr's ```accessLog parser``` for all events with the ```scalyr.access``` tag you would add the following to your fluent.conf file:
+
+```
+<filter scalyr.access>
+  type record_transformer
+  <record>
+    parser accessLog
+  </record>
+</filter>
+```
+
+Plugin Configuration
 -------------
 
 The Scalyr output plugin has a number of sensible defaults so the minimum configuration only requires your Scalyr 'write logs' token.
