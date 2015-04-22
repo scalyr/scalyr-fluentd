@@ -66,6 +66,7 @@ The following configuration options are also supported:
   ssl_ca_bundle_path /etc/ssl/certs/ca-bundle.crt
   ssl_verify_peer true
   ssl_verify_depth 5
+  message_field message
 
   #buffered output options
   retry_limit 40
@@ -102,6 +103,8 @@ The cURL project maintains CA certificate bundles automatically converted from m
 ***ssl_verify_peer*** - verify SSL certificates when sending requests to Scalyr.  This value is optional, and defaults to *true*.
 
 ***ssl_verify_depth*** - the depth to use when verifying certificates.  This value is optional, and defaults to *5*.
+
+***message_field*** - Scalyr expects all log events to have a 'message' field containing the contents of a log message.  If your event has the log message stored in another field, you can specify the field name here, and the plugin will rename that field to 'message' before sending the data to Scalyr.  ***Note:*** this will override any existing 'message' field if the log record contains both a 'message' field and the field specified by this config option.
 
 
 ####BufferedOutput options (inherited from Fluent::BufferedOutput)

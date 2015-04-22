@@ -179,5 +179,70 @@ class EventsTest < Scalyr::ScalyrOutTest
     d.instance.shutdown
   end
 
+  def test_default_message_field
+    d = create_driver CONFIG
+
+    response = flexmock( Net::HTTPResponse, :code => '200', :body =>'{ "status":"success" }'  )
+    mock = flexmock( d.instance )
+
+    time = Time.parse("2015-04-01 10:00:00 UTC").to_i
+    attrs = { "log" => "this is a test", "logfile" => "/fluentd/test" }
+    d.emit( attrs, time )
+
+    mock.should_receive( :post_request ).with(
+      URI,
+      on { |request_body|
+        body = JSON.parse( request_body )
+        events = body['events']
+        assert_equal( attrs, body['events'][0]['attrs'], "Value of attrs differs from log" )
+        true
+      }
+      ).and_return( response )
+
+    d.run
+  end
+
+  def test_different_message_field
+    d = create_driver CONFIG + 'message_field log'
+
+    response = flexmock( Net::HTTPResponse, :code => '200', :body =>'{ "status":"success" }'  )
+    mock = flexmock( d.instance )
+
+    time = Time.parse("2015-04-01 10:00:00 UTC").to_i
+    attrs = { "log" => "this is a test" }
+    d.emit( attrs, time )
+
+    mock.should_receive( :post_request ).with(
+      URI,
+      on { |request_body|
+        body = JSON.parse( request_body )
+        events = body['events']
+        assert( events[0]['attrs'].key?( 'message'), "'message' field not found in event" )
+        assert_equal( "this is a test", events[0]['attrs']['message'], "'message' field incorrect" )
+        assert( !events[0]['attrs'].key?( 'log' ), "'log' field should no longer exist in event" )
+        true
+      }
+      ).and_return( response )
+
+    d.run
+  end
+
+  def test_different_message_field_message_already_exists
+    d = create_driver CONFIG + 'message_field log'
+
+    response = flexmock( Net::HTTPResponse, :code => '200', :body =>'{ "status":"success" }'  )
+    mock = flexmock( d.instance )
+    mock.should_receive( :post_request ).and_return( response )
+
+    time = Time.parse("2015-04-01 10:00:00 UTC").to_i
+    attrs = { "log" => "this is a test", "message" => "uh oh" }
+    d.emit( attrs, time )
+
+    logger = flexmock( $log )
+    logger.should_receive( :warn ).with( /overwriting log record field 'message'/i ).at_least().once()
+
+    d.run
+  end
+
 end
 

@@ -33,6 +33,7 @@ module Scalyr
     config_param :ssl_ca_bundle_path, :string, :default => "/etc/ssl/certs/ca-bundle.crt"
     config_param :ssl_verify_peer, :bool, :default => true
     config_param :ssl_verify_depth, :integer, :default => 5
+    config_param :message_field, :string, :default => "message"
 
     config_set_default :retry_limit, 40 #try a maximum of 40 times before discarding
     config_set_default :retry_wait, 5 #wait a minimum of 5 seconds before retrying again
@@ -76,6 +77,15 @@ module Scalyr
     end
 
     def format( tag, time, record )
+      if @message_field != "message"
+        if record.key? @message_field
+          if record.key? "message"
+            $log.warn "Overwriting log record field 'message'.  You are seeing this warning because in your fluentd config file you have configured the '#{@message_field}' field to be converted to the 'message' field, but the log record already contains a field called 'message' and this is now being overwritten."
+          end
+          record["message"] = record[@message_field]
+          record.delete( @message_field )
+        end
+      end
       [tag, time, record].to_msgpack
     end
 
@@ -191,7 +201,6 @@ module Scalyr
         if !record.key? "logfile"
           record["logfile"] = "/fluentd/#{tag}"
         end
-
 
         #append to list of events
         events << { :thread => thread_id.to_s,
