@@ -34,6 +34,7 @@ module Scalyr
     config_param :ssl_verify_peer, :bool, :default => true
     config_param :ssl_verify_depth, :integer, :default => 5
     config_param :message_field, :string, :default => "message"
+    config_param :max_request_buffer, :integer, :default => 1024*1024
 
     config_set_default :retry_limit, 40 #try a maximum of 40 times before discarding
     config_set_default :retry_wait, 5 #wait a minimum of 5 seconds before retrying again
@@ -53,6 +54,10 @@ module Scalyr
 
       if @buffer.buffer_chunk_limit > 1024*1024
         $log.warn "Buffer chunk size is greater than 1Mb.  This may result in requests being rejected by Scalyr"
+      end
+
+      if @max_request_buffer > (1024*1024*3)
+        $log.warn "Maximum request buffer > 3Mb.  This may result in requests being rejected by Scalyr"
       end
 
       @scalyr_server << '/' unless @scalyr_server.end_with?('/')
@@ -91,17 +96,26 @@ module Scalyr
 
     #called by fluentd when a chunk of log messages is ready
     def write( chunk )
-      begin
-        body = self.build_add_events_body( chunk )
-        response = self.post_request( @add_events_uri, body )
-        self.handle_response( response )
-      rescue OpenSSL::SSL::SSLError => e
-        if e.message.include? "certificate verify failed"
-          $log.warn "SSL certificate verification failed.  Please make sure your certificate bundle is configured correctly and points to a valid file. You can configure this with the ssl_ca_bundle_path configuration option. The current value of ssl_ca_bundle_path is '#{@ssl_ca_bundle_path}'"
+      $log.debug "Size of chunk is: #{chunk.size}"
+      requests = self.build_add_events_body( chunk )
+      $log.debug "Chunk split into #{requests.size} request(s)."
+
+      requests.each_with_index { |request, index|
+        $log.debug "Request #{index + 1}/#{requests.size}: #{request[:body].bytesize} bytes"
+        begin
+          response = self.post_request( @add_events_uri, request[:body] )
+          self.handle_response( response )
+        rescue OpenSSL::SSL::SSLError => e
+          if e.message.include? "certificate verify failed"
+            $log.warn "SSL certificate verification failed.  Please make sure your certificate bundle is configured correctly and points to a valid file. You can configure this with the ssl_ca_bundle_path configuration option. The current value of ssl_ca_bundle_path is '#{@ssl_ca_bundle_path}'"
+          end
+          $log.warn e.message
+          $log.warn "Discarding buffer chunk without retrying or logging to <secondary>"
+        rescue Scalyr::Client4xxError => e
+          $log.warn "4XX status code received for request #{index + 1}/#{requests.size}.  Discarding buffer without retrying or logging.\n\t#{response.code} - #{e.message}\n\tChunk Size: #{chunk.size}\n\tLog messages this request: #{request[:record_count]}\n\tJSON payload size: #{request[:body].bytesize}\n\tSample: #{request[:body][0,1024]}..."
+
         end
-        $log.warn e.message
-        $log.warn "Discarding buffer chunk without retrying or logging to <secondary>"
-      end
+      }
     end
 
 
@@ -143,7 +157,13 @@ module Scalyr
       $log.debug "Response Code: #{response.code}"
       $log.debug "Response Body: #{response.body}"
 
-      response_hash = JSON.parse( response.body )
+      response_hash = Hash.new
+
+      begin
+        response_hash = JSON.parse( response.body )
+      rescue
+        response_hash["status"] = "Invalid JSON response from server"
+      end
 
       #make sure the JSON reponse has a "status" field
       if !response_hash.key? "status"
@@ -153,24 +173,35 @@ module Scalyr
 
       status = response_hash["status"]
 
-      if status != "success"
-        if status =~ /discardBuffer/
-          $log.warn "Received 'discardBuffer' message from server.  Buffer dropped."
-        elsif status =~ %r"/client/"i
-          raise Scalyr::ClientError.new status
-        else #don't check specifically for server, we assume all non-client errors are server errors
-          raise Scalyr::ServerError.new status
+      #4xx codes are handled separately
+      if response.code =~ /^4\d\d/
+        raise Scalyr::Client4xxError.new status
+      else
+        if status != "success"
+          if status =~ /discardBuffer/
+            $log.warn "Received 'discardBuffer' message from server.  Buffer dropped."
+          elsif status =~ %r"/client/"i
+            raise Scalyr::ClientError.new status
+          else #don't check specifically for server, we assume all non-client errors are server errors
+            raise Scalyr::ServerError.new status
+          end
+        elsif !response.code.include? "200" #response code is a string not an int
+          raise Scalyr::ServerError
         end
-      elsif !response.code.include? "200" #response code is a string not an int
-        raise Scalyr::ServerError
       end
 
     end
 
     def build_add_events_body( chunk )
 
+      #requests
+      requests = Array.new
+
       #set of unique scalyr threads for this chunk
       current_threads = Hash.new
+
+      #byte count
+      total_bytes = 0
 
       #create a Scalyr event object for each record in the chunk
       events = Array.new
@@ -203,13 +234,46 @@ module Scalyr
         end
 
         #append to list of events
-        events << { :thread => thread_id.to_s,
-                    :ts => timestamp.to_s,
-                    :attrs => record
-                  }
+        event = { :thread => thread_id.to_s,
+                  :ts => timestamp.to_s,
+                  :attrs => record
+                }
+
+        #get json string of event to keep track of how many bytes we are sending
+        event_json = event.to_json
+
+        #generate new request if json size of events in the array exceed maximum request buffer size
+        append_event = true
+        if total_bytes + event_json.bytesize > @max_request_buffer
+          #make sure we always have at least one event
+          if events.size == 0
+            events << event
+            append_event = false
+          end
+          request = self.create_request( events, current_threads )
+          requests << request
+
+          total_bytes = 0
+          current_threads = Hash.new
+          events = Array.new
+        end
+
+        #if we haven't consumed the current event already
+        #add it to the end of our array and keep track of the json bytesize
+        if append_event
+          events << event
+          total_bytes += event_json.bytesize
+        end
 
       }
 
+      #create a final request with any left over events
+      request = self.create_request( events, current_threads )
+      requests << request
+
+    end
+
+    def create_request( events, current_threads )
       #build the scalyr thread objects
       threads = Array.new
       current_threads.each do |tag, id|
@@ -232,7 +296,7 @@ module Scalyr
         body[:sessionInfo] = @server_attributes
       end
 
-      body.to_json
+      { :body => body.to_json, :record_count => events.size }
     end
 
   end

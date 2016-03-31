@@ -69,10 +69,10 @@ class HandleResponseTest < Scalyr::ScalyrOutTest
     assert_equal( "error/server/test", exception.message )
   end
 
-  def test_handle_response_code_not_200
+  def test_handle_response_code_4xx
     d = create_driver
     response = flexmock( Net::HTTPResponse, :code => '404', :body =>'{ "status":"error/server/fileNotFound" }'  )
-    exception = assert_raise( Scalyr::ServerError, Scalyr::ClientError, "Error raised on success" ) {
+    exception = assert_raise( Scalyr::Client4xxError, "No 4xx exception raised" ) {
       d.instance.handle_response( response )
     }
     assert_equal( "error/server/fileNotFound", exception.message )

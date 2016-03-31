@@ -19,5 +19,6 @@
 
 module Scalyr
   class ClientError < StandardError; end
+  class Client4xxError < StandardError; end
   class ServerError < StandardError; end
 end
