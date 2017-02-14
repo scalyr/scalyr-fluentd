@@ -16,13 +16,14 @@
   # replace_invalid_utf8 false
 
 
-  ##BufferedOutput options
-  # retry_limit 40
-  # retry_wait 5s
-  # max_retry_wait 30s
-  # flush_interval 5s
-  # buffer_chunk_limit 100k
-  # buffer_queue_limit 1024
-  # num_threads 1
+  <buffer>
+  #  retry_max_times 40
+  #  retry_wait 5s
+  #  retry_max_interval 30s
+  #  flush_interval 5s
+  #  flush_thread_count 1
+  #  chunk_limit_size 100k
+  #  queue_limit_length 1024
+  </buffer>
 
 </match>

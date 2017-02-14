@@ -85,13 +85,15 @@ The following configuration options are also supported:
   replace_invalid_utf8 false
 
   #buffered output options
-  retry_limit 40
-  retry_wait 5s
-  max_retry_wait 30s
-  flush_interval 5s
-  buffer_chunk_limit 100k
-  buffer_queue_limit 1024
-  num_threads 1
+  <buffer>
+    retry_max_times 40
+    retry_wait 5s
+    retry_max_interval 30s
+    flush_interval 5s
+    flush_thread_count 1
+    chunk_limit_size 100k
+    queue_limit_length 1024
+  </buffer>
 
 </match>
 ```
@@ -128,21 +130,21 @@ The cURL project maintains CA certificate bundles automatically converted from m
 
 ***replace_invalid_utf8*** - If this value is true and ***force_message_encoding*** is set to 'UTF-8' then all invalid UTF-8 sequences in log messages will be replaced with <?>.  Defaults to false.  This flag has no effect if ***force_message_encoding*** is not set to 'UTF-8'.
 
-####BufferedOutput options (inherited from Fluent::BufferedOutput)
+####Buffer options
 
-***retry_limit*** - the maximum number of times to retry a failed post request before giving up.  Defaults to *40*.
+***retry_max_times*** - the maximum number of times to retry a failed post request before giving up.  Defaults to *40*.
 
-***retry_wait*** - the initial time to wait before retrying a failed request.  Defaults to *5 seconds*.  Wait times will increase up to a maximum of ***max_retry_wait***
+***retry_wait*** - the initial time to wait before retrying a failed request.  Defaults to *5 seconds*.  Wait times will increase up to a maximum of ***retry_max_interval***
 
-***max_retry_wait*** - the maximum time to wait between retrying failed requests.  Defaults to *30 seconds*.  **Note:** This is not the total maximum time of all retry waits, but rather the maximum time to wait for a single retry.
+***retry_max_interval*** - the maximum time to wait between retrying failed requests.  Defaults to *30 seconds*.  **Note:** This is not the total maximum time of all retry waits, but rather the maximum time to wait for a single retry.
 
 ***flush_interval*** - how often to upload logs to Scalyr.  Defaults to *5 seconds*.
 
-***buffer_chunk_limit*** - the maximum amount of log data to send to Scalyr in a single request.  Defaults to *100KB*.  **Note:** if you set this value too large, then Scalyr may reject your requests.  Requests smaller than 1MB will typically be accepted by Scalyr, but note that the 1MB limit also includes the entire request body and all associated JSON keys and punctuation, which may be considerably larger than the raw log data.
+***flush_thread_count*** - the number of threads to use to upload logs.  This is currently fixed to 1 will cause fluentd to fail with a ConfigError if set to anything greater.
 
-***buffer_queue_limit*** - the maximum number of chunks to buffer before dropping new log requests.  Defaults to *1024*.  Combines with ***buffer_chunk_limit*** to give you the total amount of buffer to use in the event of request failures before dropping requests.
+***chunk_limit_size*** - the maximum amount of log data to send to Scalyr in a single request.  Defaults to *100KB*.  **Note:** if you set this value too large, then Scalyr may reject your requests.  Requests smaller than 1MB will typically be accepted by Scalyr, but note that the 1MB limit also includes the entire request body and all associated JSON keys and punctuation, which may be considerably larger than the raw log data.
 
-***num_threads*** - the number of threads to use to upload logs.  This is currently fixed to 1 will cause fluentd to fail with a ConfigError if set to anything greater.  
+***queue_limit_length*** - the maximum number of chunks to buffer before dropping new log requests.  Defaults to *1024*.  Combines with ***chunk_limit_size*** to give you the total amount of buffer to use in the event of request failures before dropping requests.
 
 Secondary Logging
 -----------------

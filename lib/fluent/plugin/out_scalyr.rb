@@ -16,7 +16,9 @@
 # limitations under the License.
 
 
+require 'fluent/plugin/output'
 require 'fluent/plugin/scalyr-exceptions'
+require 'fluent/plugin_helper/compat_parameters'
 require 'json'
 require 'net/http'
 require 'net/https'
@@ -24,8 +26,9 @@ require 'securerandom'
 require 'thread'
 
 module Scalyr
-  class ScalyrOut < Fluent::BufferedOutput
+  class ScalyrOut < Fluent::Plugin::Output
     Fluent::Plugin.register_output( 'scalyr', self )
+    helpers :compat_parameters
 
     config_param :api_write_token, :string
     config_param :server_attributes, :hash, :default => nil
@@ -38,23 +41,35 @@ module Scalyr
     config_param :force_message_encoding, :string, :default => nil
     config_param :replace_invalid_utf8, :bool, :default => false
 
-    config_set_default :retry_limit, 40 #try a maximum of 40 times before discarding
-    config_set_default :retry_wait, 5 #wait a minimum of 5 seconds before retrying again
-    config_set_default :max_retry_wait,  30 #wait a maximum of 30 seconds per retry
-    config_set_default :flush_interval, 5 #default flush interval of 5 seconds
+    config_section :buffer do
+      config_set_default :retry_max_times, 40 #try a maximum of 40 times before discarding
+      config_set_default :retry_max_interval,  30 #wait a maximum of 30 seconds per retry
+      config_set_default :retry_wait, 5 #wait a minimum of 5 seconds per retry
+      config_set_default :flush_interval, 5 #default flush interval of 5 seconds
+      config_set_default :chunk_limit_size, 1024*100 #default chunk size of 100k
+      config_set_default :queue_limit_length, 1024 #default queue size of 1024
+    end
+
+    # support for version 0.14.0:
+    def compat_parameters_default_chunk_key
+      ""
+    end
+
+    def formatted_to_msgpack_binary
+      true
+    end
 
     def configure( conf )
-      #need to call this before super because there doesn't seem to be any other way to
-      #set the default value for the buffer_chunk_limit, which is created and configured in super
-      if !conf.key? "buffer_chunk_limit"
-        conf["buffer_chunk_limit"] = "100k"
+
+      if conf.elements('buffer').empty?
+        $log.warn "Pre 0.14.0 configuration file detected.  Please consider updating your configuration file"
       end
-      if !conf.key? "buffer_queue_limit"
-        conf["buffer_queue_limit"] = 1024
-      end
+
+      compat_parameters_buffer( conf, default_chunk_key: '' )
+
       super
 
-      if @buffer.buffer_chunk_limit > 1024*1024
+      if @buffer.chunk_limit_size > 1024*1024
         $log.warn "Buffer chunk size is greater than 1Mb.  This may result in requests being rejected by Scalyr"
       end
 
@@ -76,8 +91,10 @@ module Scalyr
 
       @add_events_uri = URI @scalyr_server + "addEvents"
 
+      num_threads = @buffer_config.flush_thread_count
+
       #forcibly limit the number of threads to 1 for now, to ensure requests always have incrementing timestamps
-      raise Fluent::ConfigError, "num_threads is currently limited to 1. You specified #{@num_threads}." if @num_threads > 1
+      raise Fluent::ConfigError, "num_threads is currently limited to 1. You specified #{num_threads}." if num_threads > 1
     end
 
     def start
