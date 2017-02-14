@@ -12,6 +12,8 @@
   # ssl_ca_bundle_path /etc/ssl/certs/ca-bundle.crt
   # ssl_verify_peer true
   # ssl_verify_depth 5
+  # force_message_encoding nil
+  # replace_invalid_utf8 false
 
 
   ##BufferedOutput options

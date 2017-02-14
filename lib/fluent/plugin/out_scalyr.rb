@@ -35,6 +35,8 @@ module Scalyr
     config_param :ssl_verify_depth, :integer, :default => 5
     config_param :message_field, :string, :default => "message"
     config_param :max_request_buffer, :integer, :default => 1024*1024
+    config_param :force_message_encoding, :string, :default => nil
+    config_param :replace_invalid_utf8, :bool, :default => false
 
     config_set_default :retry_limit, 40 #try a maximum of 40 times before discarding
     config_set_default :retry_wait, 5 #wait a minimum of 5 seconds before retrying again
@@ -58,6 +60,16 @@ module Scalyr
 
       if @max_request_buffer > (1024*1024*3)
         $log.warn "Maximum request buffer > 3Mb.  This may result in requests being rejected by Scalyr"
+      end
+
+      @message_encoding = nil
+      if @force_message_encoding.to_s != ''
+        begin
+          @message_encoding = Encoding.find( @force_message_encoding )
+          $log.debug "Forcing message encoding to '#{@force_message_encoding}'"
+        rescue ArgumentError
+          $log.warn "No encoding '#{@force_message_encoding}' found.  Ignoring"
+        end
       end
 
       @scalyr_server << '/' unless @scalyr_server.end_with?('/')
@@ -89,6 +101,14 @@ module Scalyr
           end
           record["message"] = record[@message_field]
           record.delete( @message_field )
+        end
+      end
+
+      if @message_encoding
+        if @replace_invalid_utf8 and @message_encoding == Encoding::UTF_8
+          record["message"] = record["message"].encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "<?>").force_encoding('UTF-8')
+        else
+          record["message"].force_encoding( @message_encoding )
         end
       end
       [tag, time, record].to_msgpack
@@ -240,7 +260,17 @@ module Scalyr
                 }
 
         #get json string of event to keep track of how many bytes we are sending
-        event_json = event.to_json
+
+        begin
+          event_json = event.to_json
+        rescue JSON::GeneratorError, Encoding::UndefinedConversionError => e
+          $log.warn "#{e.class}: #{e.message}"
+          event[:attrs].each do |key, value|
+            $log.debug "\t#{key} (#{value.encoding.name}): '#{value}'"
+            event[:attrs][key] = value.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "<?>").force_encoding('UTF-8')
+          end
+          event_json = event.to_json
+        end
 
         #generate new request if json size of events in the array exceed maximum request buffer size
         append_event = true

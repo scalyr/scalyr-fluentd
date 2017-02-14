@@ -70,6 +70,9 @@ The following configuration options are also supported:
 
   max_request_buffer 1048576
 
+  force_message_encoding nil
+  replace_invalid_utf8 false
+
   #buffered output options
   retry_limit 40
   retry_wait 5s
@@ -109,6 +112,10 @@ The cURL project maintains CA certificate bundles automatically converted from m
 ***message_field*** - Scalyr expects all log events to have a 'message' field containing the contents of a log message.  If your event has the log message stored in another field, you can specify the field name here, and the plugin will rename that field to 'message' before sending the data to Scalyr.  **Note:** this will override any existing 'message' field if the log record contains both a 'message' field and the field specified by this config option.
 
 ***max_request_buffer*** - The maximum size in bytes of each request to send to Scalyr.  Defaults to 1,048,576 (1MB).  Fluentd chunks that generate JSON requests larger than the max_request_buffer will be split in to multiple separate requests.  **Note:** If you set this value too large Scalyr may reject your requests.
+
+***force_message_encoding*** - Set a specific encoding for all your log messages (defaults to nil).  If your log messages are not in UTF-8, this can cause problems when converting the message to JSON in order to send to the Scalyr server.  You can avoid these problems by setting an encoding for your log messages so they can be correctly converted.
+
+***replace_invalid_utf8*** - If this value is true and ***force_message_encoding*** is set to 'UTF-8' then all invalid UTF-8 sequences in log messages will be replaced with <?>.  Defaults to false.  This flag has no effect if ***force_message_encoding*** is not set to 'UTF-8'.
 
 ####BufferedOutput options (inherited from Fluent::BufferedOutput)
 
