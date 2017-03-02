@@ -27,6 +27,7 @@ module Scalyr
 
     CONFIG = %[
       api_write_token test_token
+      ssl_ca_bundle_path /etc/ssl/certs/ca-certificates.crt
     ]
 
     def create_driver( conf = CONFIG )

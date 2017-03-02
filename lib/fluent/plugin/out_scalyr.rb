@@ -107,7 +107,7 @@ module Scalyr
       #the following variables are all under the control of the above mutex
         @thread_ids = Hash.new #hash of tags -> id
         @next_id = 1 #incrementing thread id for the session
-        @last_timestamp = 0 #timestamp of most recent event
+        @last_timestamp = 0 #timestamp of most recent event in nanoseconds since epoch
 
     end
 
@@ -130,7 +130,7 @@ module Scalyr
             record["message"].force_encoding( @message_encoding )
           end
         end
-        [tag, time, record].to_msgpack
+        [tag, time.sec, time.nsec, record].to_msgpack
 
       rescue JSON::GeneratorError
         $log.warn "Unable to format message due to JSON::GeneratorError.  Record is:\n\t#{record.to_s}"
@@ -169,17 +169,16 @@ module Scalyr
     end
 
 
-
     #explicit function to convert to nanoseconds
     #will make things easier to maintain if/when fluentd supports higher than second resolutions
-    def to_nanos( seconds )
-      seconds * 10**9
+    def to_nanos( seconds, nsec )
+      (seconds * 10**9) + nsec
     end
 
     #explicit function to convert to milliseconds
     #will make things easier to maintain if/when fluentd supports higher than second resolutions
-    def to_millis( seconds )
-      seconds * 10**6
+    def to_millis( timestamp )
+      (timestamp.sec * 10**3) + (timestamp.nsec / 10**6)
     end
 
     def post_request( uri, body )
@@ -255,9 +254,10 @@ module Scalyr
 
       #create a Scalyr event object for each record in the chunk
       events = Array.new
-      chunk.msgpack_each {|(tag,time,record)|
+      chunk.msgpack_each {|(tag, sec, nsec, record)|
 
-        timestamp = self.to_nanos( time )
+        timestamp = self.to_nanos( sec, nsec )
+
         thread_id = 0
 
         @sync.synchronize {
@@ -285,7 +285,7 @@ module Scalyr
 
         #append to list of events
         event = { :thread => thread_id.to_s,
-                  :ts => timestamp.to_s,
+                  :ts => timestamp,
                   :attrs => record
                 }
 
