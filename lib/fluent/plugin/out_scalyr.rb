@@ -82,6 +82,7 @@ module Scalyr
 
     def start
       super
+      $log.info "Scalyr Fluentd Plugin ID - #{self.plugin_id()}"
       #Generate a session id.  This will be called once for each <match> in fluent.conf that uses scalyr
       @session = SecureRandom.uuid
 
@@ -94,48 +95,60 @@ module Scalyr
     end
 
     def format( tag, time, record )
-      if @message_field != "message"
-        if record.key? @message_field
-          if record.key? "message"
-            $log.warn "Overwriting log record field 'message'.  You are seeing this warning because in your fluentd config file you have configured the '#{@message_field}' field to be converted to the 'message' field, but the log record already contains a field called 'message' and this is now being overwritten."
+      begin
+        if @message_field != "message"
+          if record.key? @message_field
+            if record.key? "message"
+              $log.warn "Overwriting log record field 'message'.  You are seeing this warning because in your fluentd config file you have configured the '#{@message_field}' field to be converted to the 'message' field, but the log record already contains a field called 'message' and this is now being overwritten."
+            end
+            record["message"] = record[@message_field]
+            record.delete( @message_field )
           end
-          record["message"] = record[@message_field]
-          record.delete( @message_field )
         end
-      end
 
-      if @message_encoding
-        if @replace_invalid_utf8 and @message_encoding == Encoding::UTF_8
-          record["message"] = record["message"].encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "<?>").force_encoding('UTF-8')
-        else
-          record["message"].force_encoding( @message_encoding )
+        if @message_encoding
+          if @replace_invalid_utf8 and @message_encoding == Encoding::UTF_8
+            record["message"] = record["message"].encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "<?>").force_encoding('UTF-8')
+          else
+            record["message"].force_encoding( @message_encoding )
+          end
         end
+        [tag, time, record].to_msgpack
+
+      rescue JSON::GeneratorError
+        $log.warn "Unable to format message due to JSON::GeneratorError.  Record is:\n\t#{record.to_s}"
+        raise
       end
-      [tag, time, record].to_msgpack
     end
 
     #called by fluentd when a chunk of log messages is ready
     def write( chunk )
-      $log.debug "Size of chunk is: #{chunk.size}"
-      requests = self.build_add_events_body( chunk )
-      $log.debug "Chunk split into #{requests.size} request(s)."
+      begin
+        $log.debug "Size of chunk is: #{chunk.size}"
+        requests = self.build_add_events_body( chunk )
+        $log.debug "Chunk split into #{requests.size} request(s)."
 
-      requests.each_with_index { |request, index|
-        $log.debug "Request #{index + 1}/#{requests.size}: #{request[:body].bytesize} bytes"
-        begin
-          response = self.post_request( @add_events_uri, request[:body] )
-          self.handle_response( response )
-        rescue OpenSSL::SSL::SSLError => e
-          if e.message.include? "certificate verify failed"
-            $log.warn "SSL certificate verification failed.  Please make sure your certificate bundle is configured correctly and points to a valid file. You can configure this with the ssl_ca_bundle_path configuration option. The current value of ssl_ca_bundle_path is '#{@ssl_ca_bundle_path}'"
+        requests.each_with_index { |request, index|
+          $log.debug "Request #{index + 1}/#{requests.size}: #{request[:body].bytesize} bytes"
+          begin
+            response = self.post_request( @add_events_uri, request[:body] )
+            self.handle_response( response )
+          rescue OpenSSL::SSL::SSLError => e
+            if e.message.include? "certificate verify failed"
+              $log.warn "SSL certificate verification failed.  Please make sure your certificate bundle is configured correctly and points to a valid file. You can configure this with the ssl_ca_bundle_path configuration option. The current value of ssl_ca_bundle_path is '#{@ssl_ca_bundle_path}'"
+            end
+            $log.warn e.message
+            $log.warn "Discarding buffer chunk without retrying or logging to <secondary>"
+          rescue Scalyr::Client4xxError => e
+            $log.warn "4XX status code received for request #{index + 1}/#{requests.size}.  Discarding buffer without retrying or logging.\n\t#{response.code} - #{e.message}\n\tChunk Size: #{chunk.size}\n\tLog messages this request: #{request[:record_count]}\n\tJSON payload size: #{request[:body].bytesize}\n\tSample: #{request[:body][0,1024]}..."
+
           end
-          $log.warn e.message
-          $log.warn "Discarding buffer chunk without retrying or logging to <secondary>"
-        rescue Scalyr::Client4xxError => e
-          $log.warn "4XX status code received for request #{index + 1}/#{requests.size}.  Discarding buffer without retrying or logging.\n\t#{response.code} - #{e.message}\n\tChunk Size: #{chunk.size}\n\tLog messages this request: #{request[:record_count]}\n\tJSON payload size: #{request[:body].bytesize}\n\tSample: #{request[:body][0,1024]}..."
+        }
 
-        end
-      }
+      rescue JSON::GeneratorError
+        $log.warn "Unable to format message due to JSON::GeneratorError."
+        raise
+      end
     end
 
 
