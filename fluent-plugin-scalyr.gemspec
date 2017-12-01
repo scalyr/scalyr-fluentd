@@ -11,9 +11,9 @@ Gem::Specification.new do |gem|
   gem.email = "imron@scalyr.com"
   gem.has_rdoc = false
   gem.platform = Gem::Platform::RUBY
-  gem.files = `git ls-files`.split("\n")
-  gem.test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
-  gem.executables = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
+  gem.files = Dir['AUTHORS', 'Gemfile', 'LICENSE', 'README.md', 'Rakefile', 'VERSION', 'fluent-plugin-scalyr.gemspec', 'fluent.conf.sample', 'lib/**/*', 'test/**/*']
+  gem.test_files = Dir.glob("{test,spec,features}/**/*")
+  gem.executables = Dir.glob("bin/*").map{ |f| File.basename(f) }
   gem.require_paths = ['lib']
   gem.add_dependency "fluentd", [">= 0.14.0", "< 2"]
   gem.add_development_dependency "rake", "~> 0.9"
