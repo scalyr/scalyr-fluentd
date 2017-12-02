@@ -1,6 +1,17 @@
 Scalyr output plugin for Fluentd
 =========================
 
+**Note:** Fluentd introduced breaking changes to their plugin API between
+version 0.12 and 0.14.
+
+The current master branch of the scalyr-fluentd plugin is compatible with
+Fluentd version 0.12 and below in order to minimize the effect these changes
+have on users who are still running fluentd v0.12 or earlier.
+
+If you wish to use the scalyr-fluentd plugin with Fluentd version 0.14 or
+above, please use the **fluent-0.14** branch.  Once the majority of users have
+upgraded to fluentd v0.14 or above this branch will be merged in to master.
+
 Overview
 --------
 
