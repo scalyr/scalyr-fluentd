@@ -1,16 +1,16 @@
 Scalyr output plugin for Fluentd
 =========================
 
+<<<<<<< 259dd389ad017ec28e8f929f4cc805e9d4a640b3
 **Note:** Fluentd introduced breaking changes to their plugin API between
 version 0.12 and 0.14.
 
 The current master branch of the scalyr-fluentd plugin is compatible with
-Fluentd version 0.12 and below in order to minimize the effect these changes
-have on users who are still running fluentd v0.12 or earlier.
+Fluentd version 0.14 and above, including fluentd v1.0.0.
 
-If you wish to use the scalyr-fluentd plugin with Fluentd version 0.14 or
-above, please use the **fluent-0.14** branch.  Once the majority of users have
-upgraded to fluentd v0.14 or above this branch will be merged in to master.
+If you wish to use the scalyr-fluentd plugin with Fluentd version 0.12 or
+earlier, please use the [fluentd-0.12
+branch](https://github.com/scalyr/scalyr-fluentd/tree/cbd8c2aac3d11472121345c7cad6587a7f68c115).
 
 Overview
 --------
@@ -40,7 +40,7 @@ For example, if you want to use Scalyr's ```accessLog``` parser for all events w
 
 ```
 <filter scalyr.access>
-  type record_transformer
+  @type record_transformer
   <record>
     parser accessLog
   </record>
@@ -54,7 +54,7 @@ The Scalyr output plugin has a number of sensible defaults so the minimum config
 
 ```
 <match scalyr.*>
-  type @scalyr
+  @type scalyr
   api_write_token YOUR_SCALYR_WRITE_LOGS_TOKEN
 </match>
 ```
@@ -63,7 +63,7 @@ The following configuration options are also supported:
 
 ```
 <match scalyr.*>
-  type @scalyr
+  @type scalyr
 
   #scalyr specific options
   api_write_token YOUR_SCALYR_WRITE_TOKEN
