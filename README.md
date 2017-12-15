@@ -1,7 +1,6 @@
 Scalyr output plugin for Fluentd
 =========================
 
-<<<<<<< 259dd389ad017ec28e8f929f4cc805e9d4a640b3
 **Note:** Fluentd introduced breaking changes to their plugin API between
 version 0.12 and 0.14.
 
