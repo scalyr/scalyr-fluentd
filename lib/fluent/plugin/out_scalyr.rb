@@ -113,6 +113,15 @@ module Scalyr
 
     def format( tag, time, record )
       begin
+
+        if time.nil?
+          time = Fluent::Engine.now
+        end
+
+        if time.is_a?( Integer )
+          time = Fluent::EventTime.new( time )
+        end
+
         if @message_field != "message"
           if record.key? @message_field
             if record.key? "message"
