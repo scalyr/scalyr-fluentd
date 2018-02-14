@@ -87,6 +87,22 @@ module Scalyr
         end
       end
 
+      #evaluate any statements in string value of the server_attributes object
+      if @server_attributes
+        new_attributes = {}
+        @server_attributes.each do |key, value|
+          if value.is_a?( String )
+            m = /^\#{(.*)}$/.match( value )
+            if m
+              new_attributes[key] = eval( m[1] )
+            else
+              new_attributes[key] = value
+            end
+          end
+        end
+        @server_attributes = new_attributes
+      end
+
       @scalyr_server << '/' unless @scalyr_server.end_with?('/')
 
       @add_events_uri = URI @scalyr_server + "addEvents"
