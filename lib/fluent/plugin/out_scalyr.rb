@@ -29,6 +29,7 @@ module Scalyr
   class ScalyrOut < Fluent::Plugin::Output
     Fluent::Plugin.register_output( 'scalyr', self )
     helpers :compat_parameters
+    helpers :event_emitter
 
     config_param :api_write_token, :string
     config_param :server_attributes, :hash, :default => nil
@@ -321,8 +322,9 @@ module Scalyr
         rescue JSON::GeneratorError, Encoding::UndefinedConversionError => e
           $log.warn "#{e.class}: #{e.message}"
 
-	  # Send the faulty event to a label @ERROR block and allow to handle it there (output to exceptions file for ex)
-	  router.emit_error_event(tag, time, record, e)
+          # Send the faulty event to a label @ERROR block and allow to handle it there (output to exceptions file for ex)
+          time = Fluent::EventTime.new( sec, nsec )
+          router.emit_error_event(tag, time, record, e)
 
           event[:attrs].each do |key, value|
             $log.debug "\t#{key} (#{value.encoding.name}): '#{value}'"
