@@ -22,6 +22,9 @@ require 'fluent/plugin_helper/compat_parameters'
 require 'json'
 require 'net/http'
 require 'net/https'
+require 'rbzip2'
+require 'stringio'
+require 'zlib'
 require 'securerandom'
 require 'thread'
 
@@ -41,6 +44,8 @@ module Scalyr
     config_param :max_request_buffer, :integer, :default => 1024*1024
     config_param :force_message_encoding, :string, :default => nil
     config_param :replace_invalid_utf8, :bool, :default => false
+    config_param :compression_type, :string, :default => nil #Valid options are bz2, deflate or None. Defaults to None.
+    config_param :compression_level, :integer, :default => 9 #An int containing the compression level of compression to use, from 1-9. Defaults to 9 (max)
 
     config_section :buffer do
       config_set_default :retry_max_times, 40 #try a maximum of 40 times before discarding
@@ -219,8 +224,29 @@ module Scalyr
         https.verify_depth = @ssl_verify_depth
       end
 
+      #use compression if enabled
+      encoding = nil
+
+      if @compression_type
+        if @compression_type == 'deflate'
+          encoding = 'deflate'
+          body = Zlib::Deflate.deflate(body, @compression_level)
+        elsif @compression_type == 'bz2'
+          encoding = 'bz2'
+          io = StringIO.new
+          bz2 = RBzip2.default_adapter::Compressor.new io
+          bz2.write body
+          bz2.close
+          body = io.string
+        end
+      end
+
       post = Net::HTTP::Post.new uri.path
       post.add_field( 'Content-Type', 'application/json' )
+
+      if @compression_type
+        post.add_field( 'Content-Encoding', encoding )
+      end
 
       post.body = body
 
