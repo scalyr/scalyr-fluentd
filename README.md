@@ -66,6 +66,7 @@ The following configuration options are also supported:
 
   #scalyr specific options
   api_write_token YOUR_SCALYR_WRITE_TOKEN
+  compression_type bz2
   server_attributes {
     "serverHost": "front-1",
     "serverType": "frontend",
@@ -98,6 +99,8 @@ The following configuration options are also supported:
 ```
 
 ####Scalyr specific options
+
+***compression_type*** - compress Scalyr traffic to reduce network traffic. Options are `bz2` and `deflate`. See [here](https://www.scalyr.com/help/scalyr-agent#compressing) for more details.  This feature is optional.
 
 ***api_write_token*** - your Scalyr write logs token. See [here](http://www.scalyr.com/keys) for more details.  This value **must** be specified.
 
