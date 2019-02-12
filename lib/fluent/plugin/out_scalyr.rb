@@ -140,8 +140,14 @@ module Scalyr
           time = Fluent::Engine.now
         end
 
+        # handle timestamps that are not EventTime types
         if time.is_a?( Integer )
           time = Fluent::EventTime.new( time )
+        elsif time.is_a?( Float )
+          components = time.divmod 1 #get integer and decimal components
+          sec = components[0].to_i
+          nsec = (components[1] * 10**9).to_i
+          time = Fluent::EventTime.new( sec, nsec )
         end
 
         if @message_field != "message"
