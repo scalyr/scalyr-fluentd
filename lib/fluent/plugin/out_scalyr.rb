@@ -160,7 +160,7 @@ module Scalyr
           end
         end
 
-        if @message_encoding
+        if @message_encoding and record.key? "message" and record["message"]
           if @replace_invalid_utf8 and @message_encoding == Encoding::UTF_8
             record["message"] = record["message"].encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "<?>").force_encoding('UTF-8')
           else
