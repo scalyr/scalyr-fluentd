@@ -26,6 +26,7 @@ require 'rbzip2'
 require 'stringio'
 require 'zlib'
 require 'securerandom'
+require 'socket'
 require 'thread'
 
 module Scalyr
@@ -36,6 +37,7 @@ module Scalyr
 
     config_param :api_write_token, :string
     config_param :server_attributes, :hash, :default => nil
+    config_param :use_hostname_for_serverhost, :bool, :default => true
     config_param :scalyr_server, :string, :default => "https://agent.scalyr.com/"
     config_param :ssl_ca_bundle_path, :string, :default => "/etc/ssl/certs/ca-bundle.crt"
     config_param :ssl_verify_peer, :bool, :default => true
@@ -107,6 +109,22 @@ module Scalyr
           end
         end
         @server_attributes = new_attributes
+      end
+
+      # See if we should use the hostname as the server_attributes.serverHost
+      if @use_hostname_for_serverhost
+
+        # ensure server_attributes is not nil
+        if @server_attributes.nil?
+          @server_attributes = {}
+        end
+
+        # only set serverHost if it doesn't currently exist in server_attributes
+        # Note: Use strings rather than symbols for the key, because keys coming
+        # from the config file will be strings
+        if !@server_attributes.key? 'serverHost'
+          @server_attributes['serverHost'] = Socket.gethostname
+        end
       end
 
       @scalyr_server << '/' unless @scalyr_server.end_with?('/')

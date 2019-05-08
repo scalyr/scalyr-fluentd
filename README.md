@@ -67,6 +67,7 @@ The following configuration options are also supported:
   #scalyr specific options
   api_write_token YOUR_SCALYR_WRITE_TOKEN
   compression_type bz2
+  use_hostname_for_serverhost true
   server_attributes {
     "serverHost": "front-1",
     "serverType": "frontend",
@@ -105,6 +106,8 @@ The following configuration options are also supported:
 ***api_write_token*** - your Scalyr write logs token. See [here](http://www.scalyr.com/keys) for more details.  This value **must** be specified.
 
 ***server_attributes*** - a JSON hash containing custom server attributes you want to include with each log request.  This value is optional and defaults to *nil*.
+
+***use_hostname_for_serverhost*** - if `true` then if `server_attributes` is nil or it does *not* include a field called `serverHost` then the plugin will add the `serverHost` field with the value set to the hostname that fluentd is running on.  Defaults to `true`.
 
 ***scalyr_server*** - the Scalyr server to send API requests to. This value is optional and defaults to https://agent.scalyr.com/
 
