@@ -33,7 +33,7 @@ Fluentd tag names will be used for the logfile name in Scalyr.
 Scalyr Parsers and Custom Fields
 --------------------------------
 
-You may also need to specify a Scalyr parser for your log message or add custom fields to each log event. This can be done using Fluentd's filter mechanism, in particular the [record_transformer filter](http://docs.fluentd.org/articles/filter_record_transformer).
+You may also need to specify a Scalyr parser for your log message or add custom fields to each log event. This can be done using Fluentd's filter mechanism, in particular the [record_transformer filter](https://docs.fluentd.org/filter/record_transformer).
 
 For example, if you want to use Scalyr's ```accessLog``` parser for all events with the ```scalyr.access``` tag you would add the following to your fluent.conf file:
 
@@ -99,7 +99,7 @@ The following configuration options are also supported:
 </match>
 ```
 
-####Scalyr specific options
+#### Scalyr specific options
 
 ***compression_type*** - compress Scalyr traffic to reduce network traffic. Options are `bz2` and `deflate`. See [here](https://www.scalyr.com/help/scalyr-agent#compressing) for more details.  This feature is optional.
 
