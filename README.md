@@ -99,7 +99,7 @@ The following configuration options are also supported:
 </match>
 ```
 
-#### Scalyr specific options
+### Scalyr specific options
 
 ***compression_type*** - compress Scalyr traffic to reduce network traffic. Options are `bz2` and `deflate`. See [here](https://www.scalyr.com/help/scalyr-agent#compressing) for more details.  This feature is optional.
 
@@ -135,7 +135,7 @@ The cURL project maintains CA certificate bundles automatically converted from m
 
 ***replace_invalid_utf8*** - If this value is true and ***force_message_encoding*** is set to 'UTF-8' then all invalid UTF-8 sequences in log messages will be replaced with <?>.  Defaults to false.  This flag has no effect if ***force_message_encoding*** is not set to 'UTF-8'.
 
-####Buffer options
+### Buffer options
 
 ***retry_max_times*** - the maximum number of times to retry a failed post request before giving up.  Defaults to *40*.
 
