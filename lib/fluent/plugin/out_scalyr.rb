@@ -43,7 +43,7 @@ module Scalyr
     config_param :ssl_verify_peer, :bool, :default => true
     config_param :ssl_verify_depth, :integer, :default => 5
     config_param :message_field, :string, :default => "message"
-    config_param :max_request_buffer, :integer, :default => 1024*1024
+    config_param :max_request_buffer, :integer, :default => 3000000
     config_param :force_message_encoding, :string, :default => nil
     config_param :replace_invalid_utf8, :bool, :default => false
     config_param :compression_type, :string, :default => nil #Valid options are bz2, deflate or None. Defaults to None.
@@ -54,7 +54,7 @@ module Scalyr
       config_set_default :retry_max_interval,  30 #wait a maximum of 30 seconds per retry
       config_set_default :retry_wait, 5 #wait a minimum of 5 seconds per retry
       config_set_default :flush_interval, 5 #default flush interval of 5 seconds
-      config_set_default :chunk_limit_size, 1024*100 #default chunk size of 100k
+      config_set_default :chunk_limit_size, 2500000 #default chunk size of 2.5mb
       config_set_default :queue_limit_length, 1024 #default queue size of 1024
     end
 
@@ -77,12 +77,12 @@ module Scalyr
 
       super
 
-      if @buffer.chunk_limit_size > 1024*1024
-        $log.warn "Buffer chunk size is greater than 1Mb.  This may result in requests being rejected by Scalyr"
+      if @buffer.chunk_limit_size > 6000000
+        $log.warn "Buffer chunk size is greater than 6Mb.  This may result in requests being rejected by Scalyr"
       end
 
-      if @max_request_buffer > (1024*1024*3)
-        $log.warn "Maximum request buffer > 3Mb.  This may result in requests being rejected by Scalyr"
+      if @max_request_buffer > 6000000
+        $log.warn "Maximum request buffer > 6Mb.  This may result in requests being rejected by Scalyr"
       end
 
       @message_encoding = nil

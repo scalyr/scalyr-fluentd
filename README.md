@@ -80,7 +80,7 @@ The following configuration options are also supported:
   ssl_verify_depth 5
   message_field message
 
-  max_request_buffer 1048576
+  max_request_buffer 3000000
 
   force_message_encoding nil
   replace_invalid_utf8 false
@@ -92,7 +92,7 @@ The following configuration options are also supported:
     retry_max_interval 30s
     flush_interval 5s
     flush_thread_count 1
-    chunk_limit_size 100k
+    chunk_limit_size 2.5m
     queue_limit_length 1024
   </buffer>
 
@@ -129,7 +129,7 @@ The cURL project maintains CA certificate bundles automatically converted from m
 
 ***message_field*** - Scalyr expects all log events to have a 'message' field containing the contents of a log message.  If your event has the log message stored in another field, you can specify the field name here, and the plugin will rename that field to 'message' before sending the data to Scalyr.  **Note:** this will override any existing 'message' field if the log record contains both a 'message' field and the field specified by this config option.
 
-***max_request_buffer*** - The maximum size in bytes of each request to send to Scalyr.  Defaults to 1,048,576 (1MB).  Fluentd chunks that generate JSON requests larger than the max_request_buffer will be split in to multiple separate requests.  **Note:** If you set this value too large Scalyr may reject your requests.
+***max_request_buffer*** - The maximum size in bytes of each request to send to Scalyr.  Defaults to 3,000,000 (3MB).  Fluentd chunks that generate JSON requests larger than the max_request_buffer will be split in to multiple separate requests.  **Note:** The maximum size the Scalyr servers accept for this value is 6MB and requests containing data larger than this will be rejected.
 
 ***force_message_encoding*** - Set a specific encoding for all your log messages (defaults to nil).  If your log messages are not in UTF-8, this can cause problems when converting the message to JSON in order to send to the Scalyr server.  You can avoid these problems by setting an encoding for your log messages so they can be correctly converted.
 
@@ -147,7 +147,7 @@ The cURL project maintains CA certificate bundles automatically converted from m
 
 ***flush_thread_count*** - the number of threads to use to upload logs.  This is currently fixed to 1 will cause fluentd to fail with a ConfigError if set to anything greater.
 
-***chunk_limit_size*** - the maximum amount of log data to send to Scalyr in a single request.  Defaults to *100KB*.  **Note:** if you set this value too large, then Scalyr may reject your requests.  Requests smaller than 1MB will typically be accepted by Scalyr, but note that the 1MB limit also includes the entire request body and all associated JSON keys and punctuation, which may be considerably larger than the raw log data.
+***chunk_limit_size*** - the maximum amount of log data to send to Scalyr in a single request.  Defaults to *2.5MB*.  **Note:** if you set this value too large, then Scalyr may reject your requests.  Requests smaller than 6 MB will typically be accepted by Scalyr, but note that the 6 MB limit also includes the entire request body and all associated JSON keys and punctuation, which may be considerably larger than the raw log data.  This value should be set lower than the `max_request_buffer` option.
 
 ***queue_limit_length*** - the maximum number of chunks to buffer before dropping new log requests.  Defaults to *1024*.  Combines with ***chunk_limit_size*** to give you the total amount of buffer to use in the event of request failures before dropping requests.
 
