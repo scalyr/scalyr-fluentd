@@ -48,6 +48,7 @@ module Scalyr
     config_param :replace_invalid_utf8, :bool, :default => false
     config_param :compression_type, :string, :default => nil #Valid options are bz2, deflate or None. Defaults to None.
     config_param :compression_level, :integer, :default => 9 #An int containing the compression level of compression to use, from 1-9. Defaults to 9 (max)
+    config_param :ensure_log_order, :bool, :default => true #expect in-order logs to be incoming. Ensure logs to be ordered by timestamp, need to be disabled when accepting multiple input source
 
     config_section :buffer do
       config_set_default :retry_max_times, 40 #try a maximum of 40 times before discarding
@@ -336,20 +337,22 @@ module Scalyr
 
         thread_id = 0
 
-        @sync.synchronize {
-          #ensure timestamp is at least 1 nanosecond greater than the last one
-          timestamp = [timestamp, @last_timestamp + 1].max
-          @last_timestamp = timestamp
-
-          #get thread id or add a new one if we haven't seen this tag before
-          if @thread_ids.key? tag
-            thread_id = @thread_ids[tag]
-          else
-            thread_id = @next_id
-            @thread_ids[tag] = thread_id
-            @next_id += 1
-          end
-        }
+        if @ensure_log_order then
+          @sync.synchronize {
+            #ensure timestamp is at least 1 nanosecond greater than the last one
+            timestamp = [timestamp, @last_timestamp + 1].max
+            @last_timestamp = timestamp
+  
+            #get thread id or add a new one if we haven't seen this tag before
+            if @thread_ids.key? tag
+              thread_id = @thread_ids[tag]
+            else
+              thread_id = @next_id
+              @thread_ids[tag] = thread_id
+              @next_id += 1
+            end
+          }
+        end
 
         #then update the map of threads for this chunk
         current_threads[tag] = thread_id
