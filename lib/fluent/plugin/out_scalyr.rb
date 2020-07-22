@@ -67,6 +67,10 @@ module Scalyr
       true
     end
 
+    def multi_workers_ready?
+      true
+    end
+
     def configure( conf )
 
       if conf.elements('buffer').empty?
@@ -139,9 +143,10 @@ module Scalyr
 
     def start
       super
-      $log.info "Scalyr Fluentd Plugin ID - #{self.plugin_id()}"
       #Generate a session id.  This will be called once for each <match> in fluent.conf that uses scalyr
       @session = SecureRandom.uuid
+
+      $log.info "Scalyr Fluentd Plugin ID - #{self.plugin_id()} - session: #{@session}"
 
       @sync = Mutex.new
       #the following variables are all under the control of the above mutex
