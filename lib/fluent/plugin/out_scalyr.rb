@@ -146,12 +146,10 @@ module Scalyr
       #Generate a session id.  This will be called once for each <match> in fluent.conf that uses scalyr
       @session = SecureRandom.uuid
 
-      $log.info "Scalyr Fluentd Plugin ID - #{self.plugin_id()} - session: #{@session}"
+      $log.info "Scalyr Fluentd Plugin ID id=#{self.plugin_id()} worker=#{fluentd_worker_id} session=#{@session}"
 
       @sync = Mutex.new
       #the following variables are all under the control of the above mutex
-        @thread_ids = Hash.new #hash of tags -> id
-        @next_id = 1 #incrementing thread id for the session
         @last_timestamp = 0 #timestamp of most recent event in nanoseconds since epoch
 
     end
@@ -339,21 +337,13 @@ module Scalyr
 
         timestamp = self.to_nanos( sec, nsec )
 
-        thread_id = 0
+        thread_id = tag
 
         @sync.synchronize {
           #ensure timestamp is at least 1 nanosecond greater than the last one
           timestamp = [timestamp, @last_timestamp + 1].max
           @last_timestamp = timestamp
 
-          #get thread id or add a new one if we haven't seen this tag before
-          if @thread_ids.key? tag
-            thread_id = @thread_ids[tag]
-          else
-            thread_id = @next_id
-            @thread_ids[tag] = thread_id
-            @next_id += 1
-          end
         }
 
         #then update the map of threads for this chunk
@@ -363,6 +353,8 @@ module Scalyr
         if !record.key? "logfile"
           record["logfile"] = "/fluentd/#{tag}"
         end
+
+        record["worker_write"] = fluentd_worker_id
 
         #append to list of events
         event = { :thread => thread_id.to_s,
