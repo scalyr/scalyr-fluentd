@@ -148,10 +148,6 @@ module Scalyr
 
       $log.info "Scalyr Fluentd Plugin ID id=#{self.plugin_id()} worker=#{fluentd_worker_id} session=#{@session}"
 
-      @sync = Mutex.new
-      #the following variables are all under the control of the above mutex
-        @last_timestamp = 0 #timestamp of most recent event in nanoseconds since epoch
-
     end
 
     def format( tag, time, record )
@@ -338,13 +334,6 @@ module Scalyr
         timestamp = self.to_nanos( sec, nsec )
 
         thread_id = tag
-
-        @sync.synchronize {
-          #ensure timestamp is at least 1 nanosecond greater than the last one
-          timestamp = [timestamp, @last_timestamp + 1].max
-          @last_timestamp = timestamp
-
-        }
 
         #then update the map of threads for this chunk
         current_threads[tag] = thread_id
