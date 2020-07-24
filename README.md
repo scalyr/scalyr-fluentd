@@ -101,7 +101,7 @@ The following configuration options are also supported:
 ```
 
 For some additional examples of configuration for different setups, please refer to the
-[examples/configs/](https://github.com/scalyr/scalyr-fluentd/tree/master/examples/configf/)
+[examples/configs/](https://github.com/scalyr/scalyr-fluentd/tree/master/examples/configs/)
 directory.
 
 ### Scalyr specific options
