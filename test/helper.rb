@@ -17,7 +17,12 @@
 
 
 require 'fluent/test'
+require 'fluent/test/helpers'
+require 'fluent/test/log'
+require 'fluent/test/driver/output'
 require 'fluent/plugin/out_scalyr'
+
+include Fluent::Test::Helpers
 
 module Scalyr
   class ScalyrOutTest < Test::Unit::TestCase
@@ -31,7 +36,7 @@ module Scalyr
     ]
 
     def create_driver( conf = CONFIG )
-      Fluent::Test::BufferedOutputTestDriver.new( Scalyr::ScalyrOut ).configure( conf )
+      Fluent::Test::Driver::Output.new( Scalyr::ScalyrOut ).configure( conf )
     end
   end
 end
