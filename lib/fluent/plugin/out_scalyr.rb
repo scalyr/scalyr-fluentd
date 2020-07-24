@@ -343,8 +343,6 @@ module Scalyr
           record["logfile"] = "/fluentd/#{tag}"
         end
 
-        record["worker_write"] = fluentd_worker_id
-
         #append to list of events
         event = { :thread => thread_id.to_s,
                   :ts => timestamp,
