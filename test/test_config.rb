@@ -21,18 +21,6 @@ require 'socket'
 
 class ConfigTest  < Scalyr::ScalyrOutTest
 
-  def test_default_params
-    d = create_driver
-    hostname = Socket.gethostname
-    assert_not_nil( d.instance.server_attributes, "Default server_attributes should not be nil" )
-    assert_equal( hostname, d.instance.server_attributes['serverHost'], "Default serverHost is not hostname" )
-    assert( d.instance.ssl_verify_peer, "Default ssl_verify_peer should be true" )
-
-    #check default buffer limits because they are set outside of the config_set_default
-    assert_equal( 100*1024, d.instance.buffer.buffer_chunk_limit, "Buffer chunk limit should be 100k" )
-    assert_equal( 1024, d.instance.buffer.buffer_queue_limit, "Buffer queue limit should be 1024" )
-  end
-
   def test_custom_serverhost_not_overwritten
     hostname = "customHost"
     d = create_driver CONFIG + "server_attributes { \"serverHost\":\"#{hostname}\" }\nuse_hostname_for_serverhost true"
