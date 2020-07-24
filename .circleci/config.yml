@@ -31,7 +31,7 @@ commands:
       - restore_cache:
           name: Restore Ruby Dependencies Cache
           keys:
-            - gem-cache-v2-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+            - gem-cache-v3-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
 
       - run:
           name: Install Ruby Dependencies
@@ -40,9 +40,8 @@ commands:
 
       - save_cache:
           name: Save Ruby Dependencies Cache
-          key: gem-cache-v2-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+          key: gem-cache-v3-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
           paths:
-            - "/usr/local/bundle"
             - "~/.bundle/cache/"
             - "~/.gem/specs/"
 
@@ -74,8 +73,7 @@ commands:
             - run:
                 name: "Publish package to RubyGems"
                 command: |
-                  echo "test"
-                  #gem push pkg/fluent-plugin-scalyr-$(cat VERSION).gem
+                  gem push pkg/fluent-plugin-scalyr-$(cat VERSION).gem
 
       # Depends on "SLACK_WEBHOOK" environment variable being set
       - slack/status:
