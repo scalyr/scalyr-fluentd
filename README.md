@@ -195,7 +195,7 @@ which matches a version in VERSION file (e.g. ``v0.8.10``) and push that tag to 
 ```bash
 git tag v0.8.10
 git push origin v0.8.10
-``
+```
 
 Push of this tag will trigger a Circle CI job which will build the latest version of the gem and
 publish it to RubyGems.
