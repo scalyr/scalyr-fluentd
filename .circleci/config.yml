@@ -36,8 +36,15 @@ commands:
       - run:
           name: Install Ruby Dependencies
           command: |
-            bundle install
+            bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
             gem install rubocop
+
+      - save_cache:
+          name: Save Ruby Dependencies Cache
+          key: gem-cache-v1-{{ checksum "Gemfile.lock" }}
+          paths:
+            - "~/.bundle/cache/"
+            - "~/.gem/specs/"
 
       - run:
           name: Run Lint
@@ -54,12 +61,6 @@ commands:
           name: Run Tests
           command: |
             rake test
-
-      - save_cache:
-          name: Save Ruby Dependencies Cache
-          key: gem-cache-v1-{{ checksum "Gemfile.lock" }}
-          paths:
-            - " ~/.bundle/cache/"
 
       - when:
           # Depends on "RUBYGEMS_API_KEY" environment variable being set
