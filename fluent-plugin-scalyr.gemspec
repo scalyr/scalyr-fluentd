@@ -20,6 +20,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency "zlib"
   gem.add_development_dependency "rake", "~> 0.9"
   gem.add_development_dependency "test-unit", "~> 3.0"
+  gem.add_development_dependency "rubocop", "~> 0.4"
   gem.add_development_dependency "flexmock", "~> 1.2"
   gem.add_development_dependency "bundler", "~> 1.9"
 end
