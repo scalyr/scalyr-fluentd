@@ -1,0 +1,56 @@
+# Copyright (C) 2020 Scalyr, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: 2
+
+jobs:
+  build-test:
+    docker:
+      - image: circleci/ruby:2.6.3
+    steps:
+      - checkout
+
+      - restore_cache:
+          name: Restore Ruby Dependencies Cache
+          keys:
+            - gem-cache-v1-{{ checksum "Gemfile.lock" }}
+      - run:
+          name: Install Ruby Dependencies
+          command: |
+            bundle install
+            gem install rubocop
+      - run:
+          name: Run Lint
+          command: |
+            # For now, don't fail on failure
+            rubocop || true
+      - run:
+          name: Build Plugin
+          command: |
+            rake build
+      - run:
+          name: Run Tests
+          command: |
+            rake test
+      - save_cache:
+          name: Save Ruby Dependencies Cache
+          key: gem-cache-v1-{{ checksum "Gemfile.lock" }}
+          paths:
+            - " ~/.bundle/cache/"
+
+workflows:
+  version: 2
+  build-test:
+    jobs:
+      - build-test
