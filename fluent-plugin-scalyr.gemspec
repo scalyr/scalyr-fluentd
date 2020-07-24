@@ -9,7 +9,6 @@ Gem::Specification.new do |gem|
   gem.authors = ["Imron Alston"]
   gem.licenses = ["Apache-2.0"]
   gem.email = "imron@scalyr.com"
-  gem.has_rdoc = false
   gem.platform = Gem::Platform::RUBY
   gem.files = Dir['AUTHORS', 'Gemfile', 'LICENSE', 'README.md', 'Rakefile', 'VERSION', 'fluent-plugin-scalyr.gemspec', 'fluent.conf.sample', 'lib/**/*', 'test/**/*']
   gem.test_files = Dir.glob("{test,spec,features}/**/*")
