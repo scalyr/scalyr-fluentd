@@ -180,3 +180,22 @@ Which builds the gem and puts it in the pkg directory, then install the Gem usin
 ```
 fluent-gem install pkg/fluent-plugin-scalyr-<VERSION>.gem
 ```
+
+Publishing a new release to RubyGems
+------------------------------------
+
+(for project maintainers)
+
+To publish a new version to RubyGems, simply make your changes, make sure all the lint checks and
+tests pass and merge your changes into master.
+
+After that's done, bump a version in ``VERSION`` file, update ``CHANGELOG.md`` file, add a tag
+which matches a version in VERSION file (e.g. ``v0.8.10``) and push that tag to the remote:
+
+```bash
+git tag v0.8.10
+git push origin v0.8.10
+``
+
+Push of this tag will trigger a Circle CI job which will build the latest version of the gem and
+publish it to RubyGems.
