@@ -1,5 +1,5 @@
 Scalyr output plugin for Fluentd
-=========================
+================================
 
 **Note:** Fluentd introduced breaking changes to their plugin API between
 version 0.12 and 0.14.
@@ -99,6 +99,10 @@ The following configuration options are also supported:
 
 </match>
 ```
+
+For some additional examples of configuration for different setups, please refer to the
+[examples/configs/](https://github.com/scalyr/scalyr-fluentd/tree/master/examples/configf/)
+directory.
 
 ### Scalyr specific options
 
