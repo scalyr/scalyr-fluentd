@@ -1,7 +1,7 @@
 <match scalyr.*>
   @type scalyr
   api_write_token YOUR_WRITE_LOGS_API_TOKEN
-  compression_type bz2
+  compression_type deflate
 
   ##Scalyr specific options
   # server_attributes {
