@@ -39,7 +39,7 @@ module Scalyr
     config_param :server_attributes, :hash, :default => nil
     config_param :use_hostname_for_serverhost, :bool, :default => true
     config_param :scalyr_server, :string, :default => "https://agent.scalyr.com/"
-    config_param :ssl_ca_bundle_path, :string, :default => "/etc/ssl/certs/ca-bundle.crt"
+    config_param :ssl_ca_bundle_path, :string, :default => nil
     config_param :ssl_verify_peer, :bool, :default => true
     config_param :ssl_verify_depth, :integer, :default => 5
     config_param :message_field, :string, :default => "message"
@@ -242,7 +242,9 @@ module Scalyr
 
       #verify peers to prevent potential MITM attacks
       if @ssl_verify_peer
-        https.ca_file = @ssl_ca_bundle_path
+        if !@ssl_ca_bundle_path.nil?
+          https.ca_file = @ssl_ca_bundle_path
+        end
         https.verify_mode = OpenSSL::SSL::VERIFY_PEER
         https.verify_depth = @ssl_verify_depth
       end
