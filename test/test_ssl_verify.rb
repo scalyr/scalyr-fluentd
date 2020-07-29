@@ -28,6 +28,7 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
       d.feed(time, { "a" => 1 })
 
       logger = flexmock( $log )
+      logger.should_receive( :warn ).times(0).with( /certificate verification failed/i )
       logger.should_receive( :warn ).times(0).with( /certificate verify failed/i )
       logger.should_receive( :warn ).once().with( /discarding buffer/i )
     end
@@ -43,6 +44,7 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
       d.feed(time, { "a" => 1 })
 
       logger = flexmock( $log )
+      logger.should_receive( :warn ).times(0).with( /certificate verification failed/i )
       logger.should_receive( :warn ).times(0).with( /certificate verify failed/i )
       logger.should_receive( :warn ).once().with( /discarding buffer/i )
     end
@@ -56,7 +58,9 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
       d.feed(time, { "a" => 1 })
 
       logger = flexmock( $log )
+      logger.should_receive( :warn ).once().with( /certificate verification failed/i )
       logger.should_receive( :warn ).once().with( /certificate verify failed/i )
+      logger.should_receive( :warn ).once().with( /discarding buffer/i )
     end
   end
 end
