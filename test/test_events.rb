@@ -29,7 +29,7 @@ class EventsTest < Scalyr::ScalyrOutTest
 
     response = flexmock( Net::HTTPResponse, :code => '200', :body =>'{ "status":"success" }'  )
     mock = flexmock( d.instance )
-    mock.should_receive( :post_request ).with_any_args.and_return( response )
+    mock.should_receive( :post_request ).once().with_any_args.and_return( response )
 
     d.run(default_tag: "test") do
       d.feed(time, { "a" => 1 })
@@ -68,7 +68,7 @@ class EventsTest < Scalyr::ScalyrOutTest
         assert_equal( attrs, body['events'][0]['attrs'], "Value of attrs differs from log" )
         mock_called = true
       }
-    ).and_return( response )
+    ).once().and_return( response )
 
     d.run(default_tag: "test") do
       d.feed(time, attrs)
@@ -97,7 +97,7 @@ class EventsTest < Scalyr::ScalyrOutTest
         mock_called = true
         true
       }
-      ).and_return( response )
+      ).once().and_return( response )
 
     d.run(default_tag: "test") do
       d.feed(time, attrs)
@@ -126,7 +126,7 @@ class EventsTest < Scalyr::ScalyrOutTest
         mock_called = true
         true
       }
-      ).and_return( response )
+      ).once().and_return( response )
 
     d.run(default_tag: "test") do
       d.feed(time, attrs)
@@ -158,7 +158,7 @@ class EventsTest < Scalyr::ScalyrOutTest
         mock_called = true
         true
       }
-      ).and_return( response )
+      ).once().and_return( response )
 
     d.run(default_tag: "test") do
       d.feed(time1 , { "a" => 1 })
@@ -188,7 +188,7 @@ class EventsTest < Scalyr::ScalyrOutTest
         mock_called = true
         true
       }
-      ).and_return( response )
+      ).once().and_return( response )
 
     d.run(default_tag: "test") do
       d.feed(time , attrs)
@@ -219,7 +219,7 @@ class EventsTest < Scalyr::ScalyrOutTest
         mock_called = true
         true
       }
-      ).and_return( response )
+      ).once().and_return( response )
 
     d.run(default_tag: "test") do
       d.feed(time , attrs)
@@ -237,7 +237,7 @@ class EventsTest < Scalyr::ScalyrOutTest
     response = flexmock( Net::HTTPResponse, :code => '200', :body =>'{ "status":"success" }'  )
     mock = flexmock( d.instance )
 
-    mock.should_receive( :post_request ).and_return( response )
+    mock.should_receive( :post_request ).once().and_return( response )
 
     logger = flexmock( $log )
     logger.should_receive( :warn ).with( /overwriting log record field 'message'/i ).at_least().once()
