@@ -20,6 +20,36 @@ require 'helper'
 require 'flexmock/test_unit'
 
 class SSLVerifyTest < Scalyr::ScalyrOutTest
+  def test_good_ssl_certificates
+    d = create_driver CONFIG
+
+    d.run(default_tag: "test") do
+      time = event_time("2015-04-01 10:00:00 UTC")
+      d.feed(time, { "a" => 1 })
+
+      logger = flexmock( $log )
+      logger.should_receive( :warn ).with( /certificate verification failed/i )
+      logger.should_receive( :warn ).with( /certificate verify failed/i )
+      logger.should_receive( :warn ).with( /discarding buffer/i )
+    end
+  end
+
+  def test_no_ssl_certificates
+    d = create_driver %[
+      api_write_token test_token
+    ]
+
+    d.run(default_tag: "test") do
+      time = event_time("2015-04-01 10:00:00 UTC")
+      d.feed(time, { "a" => 1 })
+
+      logger = flexmock( $log )
+      logger.should_receive( :warn ).with( /certificate verification failed/i )
+      logger.should_receive( :warn ).with( /certificate verify failed/i )
+      logger.should_receive( :warn ).with( /discarding buffer/i )
+    end
+  end
+
   def test_bad_ssl_certificates
     d = create_driver CONFIG + 'ssl_ca_bundle_path /home/invalid'
 
