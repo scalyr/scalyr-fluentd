@@ -48,8 +48,7 @@ commands:
       - run:
           name: Run Lint
           command: |
-            # For now, don't fail on failure
-            rubocop || true
+            rubocop
 
       - run:
           name: Build Plugin

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # Scalyr Output Plugin for Fluentd
 #
@@ -15,22 +17,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-require 'helper'
-require 'flexmock/test_unit'
+require "helper"
+require "flexmock/test_unit"
 
 class SSLVerifyTest < Scalyr::ScalyrOutTest
   def test_bad_ssl_certificates
-    d = create_driver CONFIG + 'ssl_ca_bundle_path /home/invalid'
+    d = create_driver CONFIG + "ssl_ca_bundle_path /home/invalid"
 
     d.run(default_tag: "test") do
       time = event_time("2015-04-01 10:00:00 UTC")
-      d.feed(time, { "a" => 1 })
+      d.feed(time, {"a" => 1})
 
-      logger = flexmock( $log )
-      logger.should_receive( :warn ).with( /certificate verification failed/i )
-      logger.should_receive( :warn ).with( /certificate verify failed/i )
-      logger.should_receive( :warn ).with( /discarding buffer/i )
+      logger = flexmock($log)
+      logger.should_receive(:warn).with(/certificate verification failed/i)
+      logger.should_receive(:warn).with(/certificate verify failed/i)
+      logger.should_receive(:warn).with(/discarding buffer/i)
     end
   end
 end
