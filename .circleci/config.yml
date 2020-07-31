@@ -59,7 +59,7 @@ commands:
       - run:
           name: Run Tests
           command: |
-            rake test
+            sudo rake test
 
       - when:
           # Depends on "RUBYGEMS_API_KEY" environment variable being set
