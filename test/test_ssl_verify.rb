@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # Scalyr Output Plugin for Fluentd
 #
@@ -15,9 +17,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-require 'helper'
-require 'flexmock/test_unit'
+require "helper"
+require "flexmock/test_unit"
 
 class SSLVerifyTest < Scalyr::ScalyrOutTest
   def test_good_ssl_certificates
@@ -51,16 +52,16 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
   end
 
   def test_bad_ssl_certificates
-    d = create_driver CONFIG + 'ssl_ca_bundle_path /home/invalid'
+    d = create_driver CONFIG + "ssl_ca_bundle_path /home/invalid"
 
     d.run(default_tag: "test") do
       time = event_time("2015-04-01 10:00:00 UTC")
-      d.feed(time, { "a" => 1 })
+      d.feed(time, {"a" => 1})
 
       logger = flexmock( $log )
-      logger.should_receive( :warn ).once().with( /certificate verification failed/i )
-      logger.should_receive( :warn ).once().with( /certificate verify failed/i )
-      logger.should_receive( :warn ).once().with( /discarding buffer/i )
+      logger.should_receive(:warn).once().with(/certificate verification failed/i)
+      logger.should_receive(:warn).once().with(/certificate verify failed/i)
+      logger.should_receive(:warn).once().with(/discarding buffer/i)
     end
   end
 
@@ -83,9 +84,9 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
         d.feed(time, { "a" => 1 })
 
         logger = flexmock( $log )
-        logger.should_receive( :warn ).once().with( /certificate verification failed/i )
-        logger.should_receive( :warn ).once().with( /certificate verify failed/i )
-        logger.should_receive( :warn ).once().with( /discarding buffer/i )
+        logger.should_receive(:warn).once().with(/certificate verification failed/i)
+        logger.should_receive(:warn).once().with(/certificate verify failed/i)
+        logger.should_receive(:warn).once().with(/discarding buffer/i)
       end
     ensure
       # Clean up the hosts file before we possibly fail out of the test
