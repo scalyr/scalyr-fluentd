@@ -227,9 +227,7 @@ module Scalyr
 
       # verify peers to prevent potential MITM attacks
       if @ssl_verify_peer
-        unless @ssl_ca_bundle_path.nil?
-          https.ca_file = @ssl_ca_bundle_path
-        end
+        https.ca_file = @ssl_ca_bundle_path unless @ssl_ca_bundle_path.nil?
         https.verify_mode = OpenSSL::SSL::VERIFY_PEER
         https.verify_depth = @ssl_verify_depth
       end
