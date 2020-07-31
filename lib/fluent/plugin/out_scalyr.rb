@@ -38,7 +38,7 @@ module Scalyr
     config_param :server_attributes, :hash, default: nil
     config_param :use_hostname_for_serverhost, :bool, default: true
     config_param :scalyr_server, :string, default: "https://agent.scalyr.com/"
-    config_param :ssl_ca_bundle_path, :string, default: => nil
+    config_param :ssl_ca_bundle_path, :string, default: nil
     config_param :ssl_verify_peer, :bool, default: true
     config_param :ssl_verify_depth, :integer, default: 5
     config_param :message_field, :string, default: "message"
