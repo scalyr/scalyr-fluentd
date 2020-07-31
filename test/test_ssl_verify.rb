@@ -63,4 +63,33 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
       logger.should_receive( :warn ).once().with( /discarding buffer/i )
     end
   end
+
+  def test_hostname_verification
+    agent_scalyr_com_ip = `dig +short agent.scalyr.com 2> /dev/null | tail -n 1 | tr -d "\n"`
+    mock_host = "invalid.mitm.should.fail.test.agent.scalyr.com"
+    etc_hosts_entry = "#{agent_scalyr_com_ip} #{mock_host}"
+    hosts_bkp = `sudo cat /etc/hosts`
+
+    begin
+     # Add mock /etc/hosts entry and config scalyr_server entry
+      `echo "#{etc_hosts_entry}" | sudo tee -a /etc/hosts`
+      d = create_driver %[
+        api_write_token test_token
+        scalyr_server https://invalid.mitm.should.fail.test.agent.scalyr.com:443
+      ]
+
+      d.run(default_tag: "test") do
+        time = event_time("2015-04-01 10:00:00 UTC")
+        d.feed(time, { "a" => 1 })
+
+        logger = flexmock( $log )
+        logger.should_receive( :warn ).once().with( /certificate verification failed/i )
+        logger.should_receive( :warn ).once().with( /certificate verify failed/i )
+        logger.should_receive( :warn ).once().with( /discarding buffer/i )
+      end
+    ensure
+      # Clean up the hosts file before we possibly fail out of the test
+      File.write('/etc/hosts', hosts_bkp)
+    end
+  end
 end
