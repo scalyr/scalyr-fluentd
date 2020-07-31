@@ -26,11 +26,6 @@ commands:
         type: boolean
         default: false
     steps:
-      - run:
-          name: Become root
-          command: |
-            sudo -i
-
       - checkout
 
       - restore_cache:
