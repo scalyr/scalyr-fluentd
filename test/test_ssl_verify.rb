@@ -26,28 +26,28 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
 
     d.run(default_tag: "test") do
       time = event_time("2015-04-01 10:00:00 UTC")
-      d.feed(time, { "a" => 1 })
+      d.feed(time, {"a" => 1})
 
-      logger = flexmock( $log )
-      logger.should_receive( :warn ).times(0).with( /certificate verification failed/i )
-      logger.should_receive( :warn ).times(0).with( /certificate verify failed/i )
-      logger.should_receive( :warn ).once().with( /discarding buffer/i )
+      logger = flexmock($log)
+      logger.should_receive(:warn).times(0).with(/certificate verification failed/i)
+      logger.should_receive(:warn).times(0).with(/certificate verify failed/i)
+      logger.should_receive(:warn).once.with(/discarding buffer/i)
     end
   end
 
   def test_no_ssl_certificates
-    d = create_driver %[
+    d = create_driver %(
       api_write_token test_token
-    ]
+    )
 
     d.run(default_tag: "test") do
       time = event_time("2015-04-01 10:00:00 UTC")
-      d.feed(time, { "a" => 1 })
+      d.feed(time, {"a" => 1})
 
-      logger = flexmock( $log )
-      logger.should_receive( :warn ).times(0).with( /certificate verification failed/i )
-      logger.should_receive( :warn ).times(0).with( /certificate verify failed/i )
-      logger.should_receive( :warn ).once().with( /discarding buffer/i )
+      logger = flexmock($log)
+      logger.should_receive(:warn).times(0).with(/certificate verification failed/i)
+      logger.should_receive(:warn).times(0).with(/certificate verify failed/i)
+      logger.should_receive(:warn).once.with(/discarding buffer/i)
     end
   end
 
@@ -58,10 +58,10 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
       time = event_time("2015-04-01 10:00:00 UTC")
       d.feed(time, {"a" => 1})
 
-      logger = flexmock( $log )
-      logger.should_receive(:warn).once().with(/certificate verification failed/i)
-      logger.should_receive(:warn).once().with(/certificate verify failed/i)
-      logger.should_receive(:warn).once().with(/discarding buffer/i)
+      logger = flexmock($log)
+      logger.should_receive(:warn).once.with(/certificate verification failed/i)
+      logger.should_receive(:warn).once.with(/certificate verify failed/i)
+      logger.should_receive(:warn).once.with(/discarding buffer/i)
     end
   end
 
@@ -72,25 +72,25 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
     hosts_bkp = `sudo cat /etc/hosts`
 
     begin
-     # Add mock /etc/hosts entry and config scalyr_server entry
+      # Add mock /etc/hosts entry and config scalyr_server entry
       `echo "#{etc_hosts_entry}" | sudo tee -a /etc/hosts`
-      d = create_driver %[
+      d = create_driver %(
         api_write_token test_token
         scalyr_server https://invalid.mitm.should.fail.test.agent.scalyr.com:443
-      ]
+      )
 
       d.run(default_tag: "test") do
         time = event_time("2015-04-01 10:00:00 UTC")
-        d.feed(time, { "a" => 1 })
+        d.feed(time, {"a" => 1})
 
-        logger = flexmock( $log )
-        logger.should_receive(:warn).once().with(/certificate verification failed/i)
-        logger.should_receive(:warn).once().with(/certificate verify failed/i)
-        logger.should_receive(:warn).once().with(/discarding buffer/i)
+        logger = flexmock($log)
+        logger.should_receive(:warn).once.with(/certificate verification failed/i)
+        logger.should_receive(:warn).once.with(/certificate verify failed/i)
+        logger.should_receive(:warn).once.with(/discarding buffer/i)
       end
     ensure
       # Clean up the hosts file before we possibly fail out of the test
-      File.write('/etc/hosts', hosts_bkp)
+      File.write("/etc/hosts", hosts_bkp)
     end
   end
 end
