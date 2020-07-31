@@ -70,6 +70,7 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
     mock_host = "invalid.mitm.should.fail.test.agent.scalyr.com"
     etc_hosts_entry = "#{agent_scalyr_com_ip} #{mock_host}"
     hosts_bkp = `sudo cat /etc/hosts`
+    hosts_bkp = hosts_bkp.chomp
 
     begin
       # Add mock /etc/hosts entry and config scalyr_server entry
@@ -90,7 +91,7 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
       end
     ensure
       # Clean up the hosts file before we possibly fail out of the test
-      File.write("/etc/hosts", hosts_bkp)
+      `sudo echo '#{hosts_bkp}' > /etc/hosts`
     end
   end
 end
