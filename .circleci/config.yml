@@ -29,7 +29,7 @@ commands:
       - run:
           name: Become root
           command: |
-            sudo su
+            sudo -i
 
       - checkout
 
