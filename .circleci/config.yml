@@ -26,6 +26,11 @@ commands:
         type: boolean
         default: false
     steps:
+      - run:
+          name: Become root
+          command: |
+            sudo su
+
       - checkout
 
       - restore_cache:
@@ -58,7 +63,7 @@ commands:
       - run:
           name: Run Tests
           command: |
-            sudo rake test
+            rake test
 
       - when:
           # Depends on "RUBYGEMS_API_KEY" environment variable being set
