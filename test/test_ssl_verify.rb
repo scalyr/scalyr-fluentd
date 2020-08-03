@@ -90,8 +90,9 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
         logger.should_receive(:warn).once.with(/discarding buffer/i)
       end
     ensure
-      # Clean up the hosts file before we possibly fail out of the test
-      `sudo echo '#{hosts_bkp}' > /etc/hosts`
+      # Clean up the hosts file
+      `sudo truncate -s 0 /etc/hosts`
+      `echo "#{hosts_bkp}" | sudo tee -a /etc/hosts`
     end
   end
 end
