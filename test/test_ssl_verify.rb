@@ -66,7 +66,7 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
   end
 
   def test_bad_system_ssl_certificates
-    `sudo mv #{OpenSSL::X509::DEFAULT_CERT_FILE} /tmp/system_certs`
+    `mv #{OpenSSL::X509::DEFAULT_CERT_FILE} /tmp/system_certs`
 
     begin
       d = create_driver %(
@@ -83,7 +83,7 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
         logger.should_receive(:warn).once.with(/discarding buffer/i)
       end
     ensure
-      `sudo mv /tmp/system_certs #{OpenSSL::X509::DEFAULT_CERT_FILE}`
+      `mv /tmp/system_certs #{OpenSSL::X509::DEFAULT_CERT_FILE}`
     end
   end
 
