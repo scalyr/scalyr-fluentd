@@ -65,6 +65,28 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
     end
   end
 
+  def test_bad_system_ssl_certificates
+    `sudo mv #{OpenSSL::X509::DEFAULT_CERT_FILE} /tmp/system_certs`
+
+    begin
+      d = create_driver %(
+        api_write_token test_token
+      )
+
+      d.run(default_tag: "test") do
+        time = event_time("2015-04-01 10:00:00 UTC")
+        d.feed(time, {"a" => 1})
+
+        logger = flexmock($log)
+        logger.should_receive(:warn).once.with(/certificate verification failed/i)
+        logger.should_receive(:warn).once.with(/certificate verify failed/i)
+        logger.should_receive(:warn).once.with(/discarding buffer/i)
+      end
+    ensure
+      `sudo mv /tmp/system_certs #{OpenSSL::X509::DEFAULT_CERT_FILE}`
+    end
+  end
+
   def test_hostname_verification
     agent_scalyr_com_ip = `dig +short agent.scalyr.com 2> /dev/null | tail -n 1 | tr -d "\n"`
     if agent_scalyr_com_ip.empty?
