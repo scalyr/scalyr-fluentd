@@ -67,14 +67,17 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
 
   def test_hostname_verification
     agent_scalyr_com_ip = `dig +short agent.scalyr.com 2> /dev/null | tail -n 1 | tr -d "\n"`
+    if !agent_scalyr_com_ip.empty?
+      agent_scalyr_com_ip = `getent hosts agent.scalyr.com | awk '{ print $1 }' | tail -n 1 | tr -d "\n"`
+    end
     mock_host = "invalid.mitm.should.fail.test.agent.scalyr.com"
     etc_hosts_entry = "#{agent_scalyr_com_ip} #{mock_host}"
     hosts_bkp = `sudo cat /etc/hosts`
     hosts_bkp = hosts_bkp.chomp
+    # Add mock /etc/hosts entry and config scalyr_server entry
+    `echo "#{etc_hosts_entry}" | sudo tee -a /etc/hosts`
 
     begin
-      # Add mock /etc/hosts entry and config scalyr_server entry
-      `echo "#{etc_hosts_entry}" | sudo tee -a /etc/hosts`
       d = create_driver %(
         api_write_token test_token
         scalyr_server https://invalid.mitm.should.fail.test.agent.scalyr.com:443
