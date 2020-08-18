@@ -77,7 +77,7 @@ commands:
             - run:
                 name: "Setup Docker credentials"
                 command: |
-                  docker login -u scalyr -p $DOCKER_PASSWORD
+                  sudo docker login -u scalyr -p $DOCKER_PASSWORD
 
             - run:
                 name: "Publish package to RubyGems"
