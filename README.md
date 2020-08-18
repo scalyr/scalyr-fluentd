@@ -1,5 +1,5 @@
 Scalyr output plugin for Fluentd
-=========================
+================================
 
 **Note:** Fluentd introduced breaking changes to their plugin API between
 version 0.12 and 0.14.
@@ -24,7 +24,7 @@ Fluentd may format log messages into json or some other format.  If you want to 
   format none
 ```
 
-The Scalyr output plugin assigns a unique Scalyr session id for each Fluentd &lt;match&gt; block.  It is recommended that a single machine doesn't create too many simultaneous Scalyr sessions, so if possible you should try to have a single match for all logs you wish to send to Scalyr.
+The Scalyr output plugin assigns a unique Scalyr session id for each Fluentd &lt;match&gt; block, or for each worker.  It is recommended that a single machine doesn't create too many simultaneous Scalyr sessions, so if possible you should try to have a single match for all logs you wish to send to Scalyr.
 
 This can be done by specifying tags such as scalyr.apache, scalyr.maillog etc and matching on scalyr.\*
 
@@ -66,7 +66,8 @@ The following configuration options are also supported:
 
   #scalyr specific options
   api_write_token YOUR_SCALYR_WRITE_TOKEN
-  compression_type bz2
+  compression_type deflate
+  compression_level 6
   use_hostname_for_serverhost true
   server_attributes {
     "serverHost": "front-1",
@@ -80,7 +81,7 @@ The following configuration options are also supported:
   ssl_verify_depth 5
   message_field message
 
-  max_request_buffer 3000000
+  max_request_buffer 5500000
 
   force_message_encoding nil
   replace_invalid_utf8 false
@@ -99,6 +100,10 @@ The following configuration options are also supported:
 </match>
 ```
 
+For some additional examples of configuration for different setups, please refer to the
+[examples/configs/](https://github.com/scalyr/scalyr-fluentd/tree/master/examples/configs/)
+directory.
+
 ### Scalyr specific options
 
 ***compression_type*** - compress Scalyr traffic to reduce network traffic. Options are `bz2` and `deflate`. See [here](https://www.scalyr.com/help/scalyr-agent#compressing) for more details.  This feature is optional.
@@ -111,7 +116,7 @@ The following configuration options are also supported:
 
 ***scalyr_server*** - the Scalyr server to send API requests to. This value is optional and defaults to https://agent.scalyr.com/
 
-***ssl_ca_bundle_path*** - a path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.
+***ssl_ca_bundle_path*** - a path on your server pointing to a valid certificate bundle.  This value is optional and defaults to *nil*, which means it will look for a valid certificate bundle on its own.
 
 **Note:** if the certificate bundle does not contain a certificate chain that verifies the Scalyr SSL certificate then all requests to Scalyr will fail unless ***ssl_verify_peer*** is set to false.  If you suspect logging to Scalyr is failing due to an invalid certificate chain, you can grep through the Fluentd output for warnings that contain the message 'certificate verification failed'.  The full text of such warnings will look something like this:
 
@@ -129,7 +134,7 @@ The cURL project maintains CA certificate bundles automatically converted from m
 
 ***message_field*** - Scalyr expects all log events to have a 'message' field containing the contents of a log message.  If your event has the log message stored in another field, you can specify the field name here, and the plugin will rename that field to 'message' before sending the data to Scalyr.  **Note:** this will override any existing 'message' field if the log record contains both a 'message' field and the field specified by this config option.
 
-***max_request_buffer*** - The maximum size in bytes of each request to send to Scalyr.  Defaults to 3,000,000 (3MB).  Fluentd chunks that generate JSON requests larger than the max_request_buffer will be split in to multiple separate requests.  **Note:** The maximum size the Scalyr servers accept for this value is 6MB and requests containing data larger than this will be rejected.
+***max_request_buffer*** - The maximum size in bytes of each request to send to Scalyr.  Defaults to 5,500,000 (5.5MB).  Fluentd chunks that generate JSON requests larger than the max_request_buffer will be split in to multiple separate requests.  **Note:** The maximum size the Scalyr servers accept for this value is 6MB and requests containing data larger than this will be rejected.
 
 ***force_message_encoding*** - Set a specific encoding for all your log messages (defaults to nil).  If your log messages are not in UTF-8, this can cause problems when converting the message to JSON in order to send to the Scalyr server.  You can avoid these problems by setting an encoding for your log messages so they can be correctly converted.
 
@@ -175,3 +180,22 @@ Which builds the gem and puts it in the pkg directory, then install the Gem usin
 ```
 fluent-gem install pkg/fluent-plugin-scalyr-<VERSION>.gem
 ```
+
+Publishing a new release to RubyGems
+------------------------------------
+
+(for project maintainers)
+
+To publish a new version to RubyGems, simply make your changes, make sure all the lint checks and
+tests pass and merge your changes into master.
+
+After that's done, bump a version in ``VERSION`` file, update ``CHANGELOG.md`` file, add a tag
+which matches a version in VERSION file (e.g. ``v0.8.10``) and push that tag to the remote:
+
+```bash
+git tag v0.8.10
+git push origin v0.8.10
+```
+
+Push of this tag will trigger a Circle CI job which will build the latest version of the gem and
+publish it to RubyGems.

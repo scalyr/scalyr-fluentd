@@ -1,0 +1,113 @@
+# Copyright (C) 2020 Scalyr, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: 2.1
+
+orbs:
+  slack: circleci/slack@3.4.2
+
+commands:
+  build-test-deploy:
+    description: "Run lint, tests and optionally publish the gem to RubyGems"
+    parameters:
+      deploy_changes:
+        description: "True to deploy changes to RubyGems."
+        type: boolean
+        default: false
+    steps:
+      - checkout
+
+      - restore_cache:
+          name: Restore Ruby Dependencies Cache
+          keys:
+            - gem-cache-v3-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+
+      - run:
+          name: Install Ruby Dependencies
+          command: |
+            bundle check || bundle install --jobs=4 --retry=3
+
+      - save_cache:
+          name: Save Ruby Dependencies Cache
+          key: gem-cache-v3-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+          paths:
+            - "~/.bundle/cache/"
+            - "~/.gem/specs/"
+
+      - run:
+          name: Run Lint
+          command: |
+            rubocop
+
+      - run:
+          name: Build Plugin
+          command: |
+            rake build
+
+      - run:
+          name: Run Tests
+          command: |
+            rake test
+
+      - when:
+          # Depends on "RUBYGEMS_API_KEY" environment variable being set
+          condition: << parameters.deploy_changes >>
+          steps:
+            - run:
+                name: "Write RubyGems Credentials to a file"
+                command: |
+                  ./scripts/set-up-rubygems-credentials.sh
+
+            - run:
+                name: "Publish package to RubyGems"
+                command: |
+                  gem push pkg/fluent-plugin-scalyr-$(cat VERSION).gem
+
+      # Depends on "SLACK_WEBHOOK" environment variable being set
+      - slack/status:
+          fail_only: true
+          only_for_branches: master
+
+jobs:
+  build-test:
+    docker:
+      - image: circleci/ruby:2.6.3
+    steps:
+      - build-test-deploy:
+          deploy_changes: false
+
+  build-test-publish-to-rubygems:
+    docker:
+      - image: circleci/ruby:2.6.3
+    steps:
+      - build-test-deploy:
+          deploy_changes: true
+
+workflows:
+  version: 2
+  build-test-deploy:
+    jobs:
+      - build-test:
+          filters:
+            branches:
+               only: /.*/
+            tags:
+              ignore: /^v[0-9]+\.[0-9]+\.[0-9]+/
+      - build-test-publish-to-rubygems:
+          filters:
+            tags:
+              only:
+                - /^v[0-9]+\.[0-9]+\.[0-9]+/
+            branches:
+               ignore: /.*/

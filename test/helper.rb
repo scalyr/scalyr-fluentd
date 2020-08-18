@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # Scalyr Output Plugin for Fluentd
 #
@@ -15,9 +17,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require "fluent/test"
+require "fluent/test/helpers"
+require "fluent/test/log"
+require "fluent/test/driver/output"
+require "fluent/plugin/out_scalyr"
 
-require 'fluent/test'
-require 'fluent/plugin/out_scalyr'
+include Fluent::Test::Helpers # rubocop:disable Style/MixinUsage
 
 module Scalyr
   class ScalyrOutTest < Test::Unit::TestCase
@@ -25,13 +31,13 @@ module Scalyr
       Fluent::Test.setup
     end
 
-    CONFIG = %[
+    CONFIG = %(
       api_write_token test_token
       ssl_ca_bundle_path /etc/ssl/certs/ca-certificates.crt
-    ]
+    )
 
-    def create_driver( conf = CONFIG )
-      Fluent::Test::BufferedOutputTestDriver.new( Scalyr::ScalyrOut ).configure( conf )
+    def create_driver(conf=CONFIG)
+      Fluent::Test::Driver::Output.new(Scalyr::ScalyrOut).configure(conf)
     end
   end
 end
