@@ -36,7 +36,7 @@ class HandleResponseTest < Scalyr::ScalyrOutTest
     d = create_driver
     response = flexmock(Net::HTTPResponse, code: "200", body: '{ "message":"An invalid message", "status":"error/server/discardBuffer" }')
     logger = flexmock($log)
-    logger.should_receive(:warn).with(/buffer dropped/i)
+    logger.should_receive(:warn).once.with(/buffer dropped/i)
     assert_nothing_raised(Scalyr::ServerError, Scalyr::ClientError, "Nothing should be raised when discarding the buffer") {
       d.instance.handle_response(response)
     }

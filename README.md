@@ -116,7 +116,7 @@ directory.
 
 ***scalyr_server*** - the Scalyr server to send API requests to. This value is optional and defaults to https://agent.scalyr.com/
 
-***ssl_ca_bundle_path*** - a path on your server pointing to a valid certificate bundle.  This value is optional and defaults to */etc/ssl/certs/ca-bundle.crt*.
+***ssl_ca_bundle_path*** - a path on your server pointing to a valid certificate bundle.  This value is optional and defaults to *nil*, which means it will look for a valid certificate bundle on its own.
 
 **Note:** if the certificate bundle does not contain a certificate chain that verifies the Scalyr SSL certificate then all requests to Scalyr will fail unless ***ssl_verify_peer*** is set to false.  If you suspect logging to Scalyr is failing due to an invalid certificate chain, you can grep through the Fluentd output for warnings that contain the message 'certificate verification failed'.  The full text of such warnings will look something like this:
 
