@@ -46,12 +46,6 @@ commands:
             - "~/.gem/specs/"
 
       - run:
-          name: Setup Docker
-          command: |
-            curl -fsSL https://get.docker.com -o get-docker.sh
-            sh get-docker.sh
-
-      - run:
           name: Run Lint
           command: |
             rubocop
@@ -69,7 +63,7 @@ commands:
       - run:
           name: Build Docker Image
           command: |
-            docker build -t scalyr/fluentd:$(cat VERSION) -f docker/Dockerfile .
+            sudo docker build -t scalyr/fluentd:$(cat VERSION) -f docker/Dockerfile .
 
       - when:
           # Depends on "RUBYGEMS_API_KEY" environment variable being set
@@ -93,7 +87,7 @@ commands:
             - run:
                 name: "Publish image to Dockerhub"
                 command: |
-                  docker push scalyr/fluentd:$(cat VERSION)
+                  sudo docker push scalyr/fluentd:$(cat VERSION)
 
       # Depends on "SLACK_WEBHOOK" environment variable being set
       - slack/status:
