@@ -28,6 +28,8 @@ commands:
     steps:
       - checkout
 
+      - setup_remote_docker
+
       - restore_cache:
           name: Restore Ruby Dependencies Cache
           keys:
@@ -44,12 +46,6 @@ commands:
           paths:
             - "~/.bundle/cache/"
             - "~/.gem/specs/"
-
-      - run:
-          name: Setup Docker
-          command: |
-            sudo service docker start
-
 
       - run:
           name: Run Lint
