@@ -60,6 +60,11 @@ commands:
           command: |
             rake test
 
+      - run:
+          name: Build Docker Image
+          command: |
+            docker build -t scalyr/fluentd:$(cat VERSION) -f docker/Dockerfile .
+
       - when:
           # Depends on "RUBYGEMS_API_KEY" environment variable being set
           condition: << parameters.deploy_changes >>
@@ -70,9 +75,19 @@ commands:
                   ./scripts/set-up-rubygems-credentials.sh
 
             - run:
+                name: "Setup Docker credentials"
+                command: |
+                  docker login -u scalyr -p $DOCKER_PASSWORD
+
+            - run:
                 name: "Publish package to RubyGems"
                 command: |
                   gem push pkg/fluent-plugin-scalyr-$(cat VERSION).gem
+
+            - run:
+                name: "Publish image to Dockerhub"
+                command: |
+                  docker push scalyr/fluentd:$(cat VERSION)
 
       # Depends on "SLACK_WEBHOOK" environment variable being set
       - slack/status:
