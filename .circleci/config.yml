@@ -89,7 +89,9 @@ commands:
             - run:
                 name: "Publish image to Dockerhub"
                 command: |
+                  docker tag scalyr/fluentd:$(cat VERSION) scalyr/fluentd:latest
                   docker push scalyr/fluentd:$(cat VERSION)
+                  docker push scalyr/fluentd:latest
 
       # Depends on "SLACK_WEBHOOK" environment variable being set
       - slack/status:
