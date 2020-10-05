@@ -170,6 +170,46 @@ class EventsTest < Scalyr::ScalyrOutTest
     assert_equal(mock_called, true, "mock method was never called!")
   end
 
+  def test_build_add_events_body_non_json_serializable_value
+    d = create_driver
+
+    time = event_time("2015-04-01 10:00:00 UTC")
+    attrs = {"a" => 1}
+    attrs["int1"] = 1601923119
+    attrs["int2"] = Integer(1601923119)
+    attrs["int3"] = Integer(9223372036854775807)
+    attrs["int4"] = Integer(-1)
+    attrs["array"] = [1, 2, "a", "b"]
+    attrs["logfile"] = "/some/log/file"
+    # This partial unicode sequence will fail encoding so we make sure it doesn't break the plugin
+    # and we correctly cast it to a value which we can send to the API
+    attrs["partial_unicode_sequence"] = "\xC2"
+
+    response = flexmock(Net::HTTPResponse, code: "200", body: '{ "status":"success" }')
+    mock = flexmock(d.instance)
+
+    mock_called = false
+
+    expected_attrs = attrs.clone
+    expected_attrs["partial_unicode_sequence"] = "<?>"
+
+    mock.should_receive(:post_request).with(
+      URI,
+      on {|request_body|
+        body = JSON.parse(request_body)
+        assert_equal(expected_attrs, body["events"][0]["attrs"], "Value of attrs differs from log")
+        mock_called = true
+        true
+      }
+    ).once.and_return(response)
+
+    d.run(default_tag: "test") do
+      d.feed(time, attrs)
+    end
+
+    assert_equal(mock_called, true, "mock method was never called!")
+  end
+
   def test_default_message_field
     d = create_driver CONFIG
 

@@ -331,15 +331,25 @@ module Scalyr
         begin
           event_json = event.to_json
         rescue JSON::GeneratorError, Encoding::UndefinedConversionError => e
-          $log.warn "#{e.class}: #{e.message}"
+          $log.warn "JSON serialization of the event failed: #{e.class}: #{e.message}"
 
           # Send the faulty event to a label @ERROR block and allow to handle it there (output to exceptions file for ex)
           time = Fluent::EventTime.new(sec, nsec)
           router.emit_error_event(tag, time, record, e)
 
           event[:attrs].each do |key, value|
-            $log.debug "\t#{key} (#{value.encoding.name}): '#{value}'"
-            event[:attrs][key] = value.encode("UTF-8", invalid: :replace, undef: :replace, replace: "<?>").force_encoding("UTF-8") # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective
+            # NOTE: value doesn't always value.encoding attribute so we use .class which is always available
+            $log.debug "\t#{key} (#{value.class}): '#{value}'"
+
+            if value.instance_of?(String)
+              # Could be bad unicode sequence or similar which we try to re-encode as utf-8 and ignore any
+              # encoding errors
+              begin
+                event[:attrs][key] = value.encode("UTF-8", invalid: :replace, undef: :replace, replace: "<?>").force_encoding("UTF-8") # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective
+              rescue
+                event[:attrs][key] = "failed-to-reencode-as-utf8"
+              end
+            end
           end
           event_json = event.to_json
         end
