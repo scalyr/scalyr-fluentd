@@ -175,15 +175,42 @@ class EventsTest < Scalyr::ScalyrOutTest
 
     time = event_time("2015-04-01 10:00:00 UTC")
     attrs = {"a" => 1}
-    attrs["int1"] = 1601923119
-    attrs["int2"] = Integer(1601923119)
-    attrs["int3"] = Integer(9223372036854775807)
+    attrs["int1"] = 1_601_923_119
+    attrs["int2"] = Integer(1_601_923_119)
+    attrs["int3"] = Integer(9_223_372_036_854_775_807)
     attrs["int4"] = Integer(-1)
-    attrs["array"] = [1, 2, "a", "b"]
+    attrs["nil"] = nil
+    attrs["array"] = [1, 2, "a", "b", nil]
+    attrs["hash"] = {
+      "a" => "1",
+      "b" => "c"
+    }
     attrs["logfile"] = "/some/log/file"
+
     # This partial unicode sequence will fail encoding so we make sure it doesn't break the plugin
     # and we correctly cast it to a value which we can send to the API
     attrs["partial_unicode_sequence"] = "\xC2"
+    attrs["array_with_partial_unicode_sequence"] = [1, 2, "a", "b", nil, "7", "\xC2"]
+    attrs["nested_array_with_partial_unicode_sequence"] = [1, 2, "a", "b", nil, "7",
+                                                           [8, 9, [10, "\xC2"]],
+                                                           {"a" => 1, "b" => "\xC2"}]
+    attrs["hash_with_partial_unicode_sequence"] = {
+      "a" => "1",
+      "b" => "\xC2",
+      "c" => nil
+    }
+    attrs["nested_hash_with_partial_unicode_sequence"] = {
+      "a" => "1",
+      "b" => {
+        "c" => "\xC2",
+        "d" => "e",
+        "f" => nil,
+        "g" => {
+          "h" => "\xC2",
+          "b" => 3
+        }
+      }
+    }
 
     response = flexmock(Net::HTTPResponse, code: "200", body: '{ "status":"success" }')
     mock = flexmock(d.instance)
@@ -192,6 +219,12 @@ class EventsTest < Scalyr::ScalyrOutTest
 
     expected_attrs = attrs.clone
     expected_attrs["partial_unicode_sequence"] = "<?>"
+    expected_attrs["array_with_partial_unicode_sequence"][-1] = "<?>"
+    expected_attrs["nested_array_with_partial_unicode_sequence"][-2][-1][-1] = "<?>"
+    expected_attrs["nested_array_with_partial_unicode_sequence"][-1]["b"] = "<?>"
+    expected_attrs["hash_with_partial_unicode_sequence"]["b"] = "<?>"
+    expected_attrs["nested_hash_with_partial_unicode_sequence"]["b"]["c"] = "<?>"
+    expected_attrs["nested_hash_with_partial_unicode_sequence"]["b"]["g"]["h"] = "<?>"
 
     mock.should_receive(:post_request).with(
       URI,

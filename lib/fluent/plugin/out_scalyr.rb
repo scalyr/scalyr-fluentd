@@ -298,6 +298,33 @@ module Scalyr
       end
     end
 
+    def sanitize_and_reencode_value(hash, key, value)
+      # Method which recursively sanitized the hash and tries to re-encode all the strings as
+      # UTF-8 ignoring any bad unicode sequences
+      case value
+      when Hash
+        sanitize_and_reencode_hash(hash, key, value)
+      when String
+        hash[key] = sanitize_and_reencode_string(value)
+      end
+    end
+
+    def sanitize_and_reencode_hash(hash, key, value)
+      value.each do |k, v|
+        sanitize_and_reencode_value(hash[key], k, v)
+      end
+    end
+
+    def sanitize_and_reencode_string(value)
+      # Function which sanitized the provided string value and tries to re-encode it as UTF-8
+      # ignoring any encoding error which could arise due to bad or partial unicode sequence
+      begin # rubocop:disable Style/RedundantBegin
+        value.encode("UTF-8", invalid: :replace, undef: :replace, replace: "<?>").force_encoding("UTF-8") # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective
+      rescue # rubocop:disable Style/RescueStandardError
+        "failed-to-reencode-as-utf8"
+      end
+    end
+
     def build_add_events_body(chunk)
       # requests
       requests = []
@@ -338,19 +365,12 @@ module Scalyr
           router.emit_error_event(tag, time, record, e)
 
           $log.debug "Event attributes:"
+          # TODO: Process attributes recursively (aka also handle dicts and arrays with bad values)
           event[:attrs].each do |key, value|
             # NOTE: value doesn't always value.encoding attribute so we use .class which is always available
             $log.debug "\t#{key} (#{value.class}): '#{value}'"
-
-            if value.instance_of?(String)
-              # Could be bad unicode sequence or similar which we try to re-encode as utf-8 and ignore any
-              # encoding errors / bad or partial unicode sequences
-              begin
-                event[:attrs][key] = value.encode("UTF-8", invalid: :replace, undef: :replace, replace: "<?>").force_encoding("UTF-8") # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective
-              rescue
-                event[:attrs][key] = "failed-to-reencode-as-utf8"
-              end
-            end
+            # Recursively re-encode and sanitize potentially bad string values
+            sanitize_and_reencode_value(event[:attrs], key, value)
           end
           event_json = event.to_json
         end
