@@ -337,6 +337,7 @@ module Scalyr
           time = Fluent::EventTime.new(sec, nsec)
           router.emit_error_event(tag, time, record, e)
 
+          $log.debug "Event attributes:"
           event[:attrs].each do |key, value|
             # NOTE: value doesn't always value.encoding attribute so we use .class which is always available
             $log.debug "\t#{key} (#{value.class}): '#{value}'"
