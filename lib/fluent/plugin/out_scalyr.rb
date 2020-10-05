@@ -344,7 +344,7 @@ module Scalyr
 
             if value.instance_of?(String)
               # Could be bad unicode sequence or similar which we try to re-encode as utf-8 and ignore any
-              # encoding errors
+              # encoding errors / bad or partial unicode sequences
               begin
                 event[:attrs][key] = value.encode("UTF-8", invalid: :replace, undef: :replace, replace: "<?>").force_encoding("UTF-8") # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective
               rescue
