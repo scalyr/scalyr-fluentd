@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fluent-plugin-scalyr (0.8.10)
+    fluent-plugin-scalyr (0.8.12)
       ffi (= 1.9.25)
       fluentd (>= 0.14.0, < 2)
       rbzip2 (= 0.3.0)
