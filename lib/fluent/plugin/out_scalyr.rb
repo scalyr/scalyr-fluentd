@@ -298,21 +298,39 @@ module Scalyr
       end
     end
 
-    def sanitize_and_reencode_value(hash, key, value)
-      # Method which recursively sanitized the hash and tries to re-encode all the strings as
+    def sanitize_and_reencode_value(value)
+      # Method which recursively sanitizes the provided value and tries to re-encode all the strings as
       # UTF-8 ignoring any bad unicode sequences
       case value
       when Hash
-        sanitize_and_reencode_hash(hash, key, value)
+        return sanitize_and_reencode_hash(value)
+      when Array
+        return sanitize_and_reencode_array(value)
       when String
-        hash[key] = sanitize_and_reencode_string(value)
+        value = sanitize_and_reencode_string(value)
+        return value
       end
+
+      # We only need to re-encode strings, for other value types (ints, nils,
+      # etc. no reencoding is needed)
+      value
     end
 
-    def sanitize_and_reencode_hash(hash, key, value)
-      value.each do |k, v|
-        sanitize_and_reencode_value(hash[key], k, v)
+    def sanitize_and_reencode_array(array)
+      array.each_with_index do |value, index|
+        value = sanitize_and_reencode_value(value)
+        array[index] = value
       end
+
+      array
+    end
+
+    def sanitize_and_reencode_hash(hash)
+      hash.each do |key, value|
+        hash[key] = sanitize_and_reencode_value(value)
+      end
+
+      hash
     end
 
     def sanitize_and_reencode_string(value)
@@ -364,14 +382,16 @@ module Scalyr
           time = Fluent::EventTime.new(sec, nsec)
           router.emit_error_event(tag, time, record, e)
 
+          # Print attribute values for debugging / troubleshooting purposes
           $log.debug "Event attributes:"
-          # TODO: Process attributes recursively (aka also handle dicts and arrays with bad values)
+
           event[:attrs].each do |key, value|
             # NOTE: value doesn't always value.encoding attribute so we use .class which is always available
             $log.debug "\t#{key} (#{value.class}): '#{value}'"
-            # Recursively re-encode and sanitize potentially bad string values
-            sanitize_and_reencode_value(event[:attrs], key, value)
           end
+
+          # Recursively re-encode and sanitize potentially bad string values
+          event[:attrs] = sanitize_and_reencode_value(event[:attrs])
           event_json = event.to_json
         end
 

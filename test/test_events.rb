@@ -217,7 +217,9 @@ class EventsTest < Scalyr::ScalyrOutTest
 
     mock_called = false
 
-    expected_attrs = attrs.clone
+    # NOTE: We need to perform a deep clone / copy
+    expected_attrs = Marshal.load(Marshal.dump(attrs))
+
     expected_attrs["partial_unicode_sequence"] = "<?>"
     expected_attrs["array_with_partial_unicode_sequence"][-1] = "<?>"
     expected_attrs["nested_array_with_partial_unicode_sequence"][-2][-1][-1] = "<?>"
@@ -225,6 +227,13 @@ class EventsTest < Scalyr::ScalyrOutTest
     expected_attrs["hash_with_partial_unicode_sequence"]["b"] = "<?>"
     expected_attrs["nested_hash_with_partial_unicode_sequence"]["b"]["c"] = "<?>"
     expected_attrs["nested_hash_with_partial_unicode_sequence"]["b"]["g"]["h"] = "<?>"
+
+    # Verify that clone / copy was correct and the original object wasn't modified
+    assert_not_equal(expected_attrs, attrs, "Objects are the same but should be different")
+    assert_not_equal(Marshal.load(Marshal.dump(attrs)), Marshal.load(Marshal.dump(expected_attrs)))
+    assert_equal(attrs["partial_unicode_sequence"], "\xC2")
+    assert_equal(attrs["array_with_partial_unicode_sequence"][-1], "\xC2")
+    assert_equal(attrs["nested_hash_with_partial_unicode_sequence"]["b"]["g"]["h"], "\xC2")
 
     mock.should_receive(:post_request).with(
       URI,
