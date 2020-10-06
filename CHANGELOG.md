@@ -1,8 +1,8 @@
 ## 0.8.12 - October 6th, 2020
 
 - Update the plugin so we ignore any unicode deserialization related errors which may arise
-  serializing events to JSON in case event attribute string valye contains bad or partial
-  unicode escape sequences.
+  serializing events to JSON in case event attribute string value contains bad or partial
+  unicode escape sequence.
 
   Previously, in cases like that, the plugin would throw an exception and such event would not be
   processed.
