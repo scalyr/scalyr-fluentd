@@ -170,6 +170,88 @@ class EventsTest < Scalyr::ScalyrOutTest
     assert_equal(mock_called, true, "mock method was never called!")
   end
 
+  def test_build_add_events_body_non_json_serializable_value
+    d = create_driver
+
+    time = event_time("2015-04-01 10:00:00 UTC")
+    attrs = {"a" => 1}
+    attrs["int1"] = 1_601_923_119
+    attrs["int2"] = Integer(1_601_923_119)
+    attrs["int3"] = Integer(9_223_372_036_854_775_807)
+    attrs["int4"] = Integer(-1)
+    attrs["nil"] = nil
+    attrs["array"] = [1, 2, "a", "b", nil]
+    attrs["hash"] = {
+      "a" => "1",
+      "b" => "c"
+    }
+    attrs["logfile"] = "/some/log/file"
+
+    # This partial unicode sequence will fail encoding so we make sure it doesn't break the plugin
+    # and we correctly cast it to a value which we can send to the API
+    attrs["partial_unicode_sequence"] = "\xC2"
+    attrs["array_with_partial_unicode_sequence"] = [1, 2, "a", "b", nil, "7", "\xC2"]
+    attrs["nested_array_with_partial_unicode_sequence"] = [1, 2, "a", "b", nil, "7",
+                                                           [8, 9, [10, "\xC2"]],
+                                                           {"a" => 1, "b" => "\xC2"}]
+    attrs["hash_with_partial_unicode_sequence"] = {
+      "a" => "1",
+      "b" => "\xC2",
+      "c" => nil
+    }
+    attrs["nested_hash_with_partial_unicode_sequence"] = {
+      "a" => "1",
+      "b" => {
+        "c" => "\xC2",
+        "d" => "e",
+        "f" => nil,
+        "g" => {
+          "h" => "\xC2",
+          "b" => 3
+        }
+      }
+    }
+
+    response = flexmock(Net::HTTPResponse, code: "200", body: '{ "status":"success" }')
+    mock = flexmock(d.instance)
+
+    mock_called = false
+
+    # NOTE: We need to perform a deep clone / copy
+    expected_attrs = Marshal.load(Marshal.dump(attrs))
+
+    expected_attrs["partial_unicode_sequence"] = "<?>"
+    expected_attrs["array_with_partial_unicode_sequence"][-1] = "<?>"
+    expected_attrs["nested_array_with_partial_unicode_sequence"][-2][-1][-1] = "<?>"
+    expected_attrs["nested_array_with_partial_unicode_sequence"][-1]["b"] = "<?>"
+    expected_attrs["hash_with_partial_unicode_sequence"]["b"] = "<?>"
+    expected_attrs["nested_hash_with_partial_unicode_sequence"]["b"]["c"] = "<?>"
+    expected_attrs["nested_hash_with_partial_unicode_sequence"]["b"]["g"]["h"] = "<?>"
+
+    # Verify that clone / copy was correct and the original object wasn't modified
+    assert_not_equal(expected_attrs, attrs, "Objects are the same but should be different")
+    assert_not_equal(Marshal.load(Marshal.dump(attrs)), Marshal.load(Marshal.dump(expected_attrs)))
+    assert_equal(attrs["partial_unicode_sequence"], "\xC2")
+    assert_equal(attrs["array_with_partial_unicode_sequence"][-1], "\xC2")
+    assert_equal(attrs["nested_hash_with_partial_unicode_sequence"]["b"]["g"]["h"], "\xC2")
+
+    mock.should_receive(:post_request).with(
+      URI,
+      on {|request_body|
+        body = JSON.parse(request_body)
+        assert_equal(expected_attrs, body["events"][0]["attrs"], "Value of attrs differs from log")
+        mock_called = true
+        true
+      }
+    ).once.and_return(response)
+
+    d.run(default_tag: "test") do
+      d.feed(time, attrs)
+    end
+
+    assert_equal(mock_called, true, "mock method was never called!")
+  end
+
   def test_default_message_field
     d = create_driver CONFIG
 

@@ -1,3 +1,15 @@
+## 0.8.12 - October 6th, 2020
+
+- Update the plugin so we ignore any unicode deserialization related errors which may arise
+  serializing events to JSON in case event attribute string value contains bad or partial
+  unicode escape sequence.
+
+  Previously, in cases like that, the plugin would throw an exception and such event would not be
+  processed.
+
+  Now in cases like this, we recursively sanitize the event values and strip out any bad or partial
+  unicode escape sequences.
+
 ## 0.8.11 - August 19th, 2020
 
 - Change default value of `ssl_ca_bundle_path` to `nil`, causing the plugin to default to system certs.
