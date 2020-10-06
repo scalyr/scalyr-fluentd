@@ -19,6 +19,7 @@
 
 require "fluent/plugin/output"
 require "fluent/plugin/scalyr_exceptions"
+require "fluent/plugin/scalyr_utils"
 require "fluent/plugin_helper/compat_parameters"
 require "json"
 require "net/http"
@@ -295,51 +296,6 @@ module Scalyr
         elsif !response.code.include? "200" # response code is a string not an int
           raise Scalyr::ServerError
         end
-      end
-    end
-
-    def sanitize_and_reencode_value(value)
-      # Method which recursively sanitizes the provided value and tries to re-encode all the strings as
-      # UTF-8 ignoring any bad unicode sequences
-      case value
-      when Hash
-        return sanitize_and_reencode_hash(value)
-      when Array
-        return sanitize_and_reencode_array(value)
-      when String
-        value = sanitize_and_reencode_string(value)
-        return value
-      end
-
-      # We only need to re-encode strings, for other value types (ints, nils,
-      # etc. no reencoding is needed)
-      value
-    end
-
-    def sanitize_and_reencode_array(array)
-      array.each_with_index do |value, index|
-        value = sanitize_and_reencode_value(value)
-        array[index] = value
-      end
-
-      array
-    end
-
-    def sanitize_and_reencode_hash(hash)
-      hash.each do |key, value|
-        hash[key] = sanitize_and_reencode_value(value)
-      end
-
-      hash
-    end
-
-    def sanitize_and_reencode_string(value)
-      # Function which sanitized the provided string value and tries to re-encode it as UTF-8
-      # ignoring any encoding error which could arise due to bad or partial unicode sequence
-      begin # rubocop:disable Style/RedundantBegin
-        value.encode("UTF-8", invalid: :replace, undef: :replace, replace: "<?>").force_encoding("UTF-8") # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective
-      rescue # rubocop:disable Style/RescueStandardError
-        "failed-to-reencode-as-utf8"
       end
     end
 
