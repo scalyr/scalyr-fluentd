@@ -1,3 +1,9 @@
+## 0.8.13 - October 26th, 2021
+
+- Add a new configuration option `parser` for setting a per-event "parser" field without
+  having to use filters. This is intended to be used in cases where configuring a filter
+  is more difficult, such as Fargate.
+
 ## 0.8.12 - October 6th, 2020
 
 - Update the plugin so we ignore any unicode deserialization related errors which may arise
