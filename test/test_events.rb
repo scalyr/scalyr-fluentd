@@ -136,6 +136,34 @@ class EventsTest < Scalyr::ScalyrOutTest
     assert_equal(mock_called, true, "mock method was never called!")
   end
 
+  def test_build_add_events_body_with_parser
+    d = create_driver CONFIG + 'parser test_parser'
+
+    time = event_time("2015-04-01 10:00:00 UTC")
+    attrs = {"a" => 1}
+
+    response = flexmock(Net::HTTPResponse, code: "200", body: '{ "status":"success" }')
+    mock = flexmock(d.instance)
+
+    mock_called = false
+
+    mock.should_receive(:post_request).with(
+      URI,
+      on {|request_body|
+        body = JSON.parse(request_body)
+        assert_equal("test_parser", body["attrs"]["parser"])
+        mock_called = true
+        true
+      }
+    ).once.and_return(response)
+
+    d.run(default_tag: "test") do
+      d.feed(time, attrs)
+    end
+
+    assert_equal(mock_called, true, "mock method was never called!")
+  end
+
   def test_build_add_events_body_incrementing_timestamps
     d = create_driver
 
