@@ -137,7 +137,7 @@ class EventsTest < Scalyr::ScalyrOutTest
   end
 
   def test_build_add_events_body_with_parser
-    d = create_driver CONFIG + 'parser test_parser'
+    d = create_driver CONFIG + "parser test_parser"
 
     time = event_time("2015-04-01 10:00:00 UTC")
     attrs = {"a" => 1}
