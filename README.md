@@ -92,9 +92,9 @@ directory.
 Scalyr Parsers and Custom Fields
 --------------------------------
 
-You may also need to specify a Scalyr parser for your log message. This can be done using using either the ```parser``` configuration option or Fluentd's filter mechanism, in particular the [record_transformer filter](https://docs.fluentd.org/filter/record_transformer).
+You may also need to specify a Scalyr parser for your log message. This can be done using either the ```parser``` configuration option or Fluentd's filter mechanism, in particular the [record_transformer filter](https://docs.fluentd.org/filter/record_transformer).
 
-For example, if you want to use Scalyr's ```accessLog``` parser for all events with the ```scalyr.access``` tag you would add the following to your fluent.conf file:
+For example, if you want to use Scalyr's ```accessLog``` parser (or set any other field to some value) for all events with the ```scalyr.access``` tag you would add the following to your fluent.conf file:
 
 ```
 <filter scalyr.access>
@@ -111,7 +111,7 @@ Alternatively you can set the ```accessLog``` parser for all events uploaded by 
 <match scalyr.*>
   @type scalyr
   api_write_token YOUR_SCALYR_WRITE_LOGS_TOKEN
-  parser accessLog // New line here
+  parser accessLog
 </match>
 ```
 
@@ -122,8 +122,6 @@ Alternatively you can set the ```accessLog``` parser for all events uploaded by 
 ***api_write_token*** - your Scalyr write logs token. See [here](http://www.scalyr.com/keys) for more details.  This value **must** be specified.
 
 ***server_attributes*** - a JSON hash containing custom server attributes you want to include with each log request.  This value is optional and defaults to *nil*.
-
-***parser*** - a string to set as the "parser" value for every event. Normally it is recommended to use filters to set this field, but in some use cases this is not simple so this option is available. This values is optional and defaults to *nil*.
 
 ***use_hostname_for_serverhost*** - if `true` then if `server_attributes` is nil or it does *not* include a field called `serverHost` then the plugin will add the `serverHost` field with the value set to the hostname that fluentd is running on.  Defaults to `true`.
 
@@ -147,7 +145,7 @@ The cURL project maintains CA certificate bundles automatically converted from m
 
 ***message_field*** - Scalyr expects all log events to have a 'message' field containing the contents of a log message.  If your event has the log message stored in another field, you can specify the field name here, and the plugin will rename that field to 'message' before sending the data to Scalyr.  **Note:** this will override any existing 'message' field if the log record contains both a 'message' field and the field specified by this config option.
 
-***parser*** - If configured this will set the 'parser' field in every message the plugin uploads to the given value, overwriting it if the field already existed. This field is used by Scalyr for defining server side parsers of the 'message' field.
+***parser*** - a string to set as the "parser" value for every event. This values is optional and defaults to *nil*.
 
 ***max_request_buffer*** - The maximum size in bytes of each request to send to Scalyr.  Defaults to 5,500,000 (5.5MB).  Fluentd chunks that generate JSON requests larger than the max_request_buffer will be split in to multiple separate requests.  **Note:** The maximum size the Scalyr servers accept for this value is 6MB and requests containing data larger than this will be rejected.
 
