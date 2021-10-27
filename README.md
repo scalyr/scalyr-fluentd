@@ -92,9 +92,9 @@ directory.
 Scalyr Parsers and Custom Fields
 --------------------------------
 
-You may also need to specify a Scalyr parser for your log message. This can be done using either the ```parser``` configuration option or Fluentd's filter mechanism, in particular the [record_transformer filter](https://docs.fluentd.org/filter/record_transformer).
+You may also need to specify a Scalyr parser for your log message or add custom fields to each log event. This can be done using Fluentd's filter mechanism, in particular the [record_transformer filter](https://docs.fluentd.org/filter/record_transformer).
 
-For example, if you want to use Scalyr's ```accessLog``` parser (or set any other field to some value) for all events with the ```scalyr.access``` tag you would add the following to your fluent.conf file:
+For example, if you want to use Scalyr's ```accessLog``` parser for all events with the ```scalyr.access``` tag you would add the following to your fluent.conf file:
 
 ```
 <filter scalyr.access>
@@ -105,7 +105,7 @@ For example, if you want to use Scalyr's ```accessLog``` parser (or set any othe
 </filter>
 ```
 
-Alternatively you can set the ```accessLog``` parser for all events uploaded by this plugin by modifying your existing output plugin configuration:
+Alternatively, if the same parser can be used for all events sent by the Fluentd output plugin, the parser can be set using the ```parser``` plugin configuration. For example, to use Scalyr's ```accessLog``` parser for all events, use the output plugin configuration:
 
 ```
 <match scalyr.*>
@@ -145,7 +145,7 @@ The cURL project maintains CA certificate bundles automatically converted from m
 
 ***message_field*** - Scalyr expects all log events to have a 'message' field containing the contents of a log message.  If your event has the log message stored in another field, you can specify the field name here, and the plugin will rename that field to 'message' before sending the data to Scalyr.  **Note:** this will override any existing 'message' field if the log record contains both a 'message' field and the field specified by this config option.
 
-***parser*** - a string to set as the "parser" value for every event. This values is optional and defaults to *nil*.
+***parser*** - The Scalyr parser to use to parse the 'message' field for each event. This value is optional and defaults to *nil*.
 
 ***max_request_buffer*** - The maximum size in bytes of each request to send to Scalyr.  Defaults to 5,500,000 (5.5MB).  Fluentd chunks that generate JSON requests larger than the max_request_buffer will be split in to multiple separate requests.  **Note:** The maximum size the Scalyr servers accept for this value is 6MB and requests containing data larger than this will be rejected.
 
