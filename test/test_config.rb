@@ -57,5 +57,10 @@ class ConfigTest < Scalyr::ScalyrOutTest
     d = create_driver CONFIG + 'server_attributes { "test":"value" }'
     assert_equal("value", d.instance.server_attributes["test"], "Config failed to set server_attributes")
   end
+
+  def test_configure_parser
+    d = create_driver CONFIG + "parser access_log"
+    assert_equal("access_log", d.instance.parser, "Config failed to set parser")
+  end
 end
 # rubocop:enable Layout/LineLength

@@ -37,6 +37,7 @@ module Scalyr
 
     config_param :api_write_token, :string
     config_param :server_attributes, :hash, default: nil
+    config_param :parser, :string, default: nil # Set the "parser" field to this, per event.
     config_param :use_hostname_for_serverhost, :bool, default: true
     config_param :scalyr_server, :string, default: "https://agent.scalyr.com/"
     config_param :ssl_ca_bundle_path, :string, default: nil
@@ -321,6 +322,9 @@ module Scalyr
 
         # add a logfile field if one doesn't exist
         record["logfile"] = "/fluentd/#{tag}" unless record.key? "logfile"
+
+        # set per-event parser if it is configured
+        record["parser"] = @parser unless @parser.nil?
 
         # append to list of events
         event = {thread: thread_id.to_s,
