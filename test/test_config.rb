@@ -60,7 +60,7 @@ class ConfigTest < Scalyr::ScalyrOutTest
 
   def test_configure_parser
     d = create_driver CONFIG + "parser access_log"
-    assert_equal(access_log, d.instance.parser, "Config failed to set parser")
+    assert_equal("access_log", d.instance.parser, "Config failed to set parser")
   end
 end
 # rubocop:enable Layout/LineLength
