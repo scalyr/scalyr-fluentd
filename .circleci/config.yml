@@ -65,7 +65,7 @@ commands:
       - run:
           name: Build Docker Image
           command: |
-            docker build -t scalyr/fluentd:$(cat VERSION) -f docker/Dockerfile .
+            docker build -t scalyr/fluentd:$(cat VERSION) -t scalyr/fluentd:latest -f docker/Dockerfile .
 
       - when:
           # Depends on "RUBYGEMS_API_KEY" environment variable being set
@@ -90,6 +90,7 @@ commands:
                 name: "Publish image to Dockerhub"
                 command: |
                   docker push scalyr/fluentd:$(cat VERSION)
+                  docker push scalyr/fluentd:latest
 
       # Depends on "SLACK_WEBHOOK" environment variable being set
       - slack/status:
