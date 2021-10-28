@@ -151,7 +151,7 @@ class EventsTest < Scalyr::ScalyrOutTest
       URI,
       on {|request_body|
         body = JSON.parse(request_body)
-        assert_equal("test_parser", body["attrs"]["parser"])
+        assert_equal("test_parser", body["events"][0]["attrs"]["parser"])
         mock_called = true
         true
       }
