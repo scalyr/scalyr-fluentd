@@ -1,3 +1,7 @@
+## 0.8.14 - October 28th, 2021
+
+- Updates to automated release deployment to have `latest` tag in dockerhub updated correctly.
+
 ## 0.8.13 - October 26th, 2021
 
 - Add a new configuration option `parser` for setting a per-event "parser" field without
