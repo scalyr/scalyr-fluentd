@@ -358,11 +358,13 @@ module Scalyr
         # generate new request if json size of events in the array exceed maximum request buffer size
         append_event = true
         if total_bytes + event_json.bytesize > @max_request_buffer
-          # make sure we always have at least one event
+          # the case where a single event causes us to exceed the @max_request_buffer
           if events.empty?
+            # if we are able to truncate the content inside the @message_field we do so here
             if record.key?(@message_field) &&
               record[@message_field].is_a?(String) &&
-                record[@message_field].bytesize > event_json.bytesize - @max_request_buffer
+              record[@message_field].bytesize > event_json.bytesize - @max_request_buffer
+
               @log.warn "Received a record that cannot fit within max_request_buffer "\
                 "(#{@max_request_buffer}), serialized event size is #{event_json.bytesize}."\
                 " The #{@message_field} field will be truncated to fit."
@@ -370,6 +372,8 @@ module Scalyr
               truncated_msg = event[:attrs][@message_field][0...max_msg_size]
               event[:attrs][@message_field] = truncated_msg
               events << event
+
+            # otherwise we drop the event and save ourselves hitting a 4XX response from the server
             else
               @log.warn "Received a record that cannot fit within max_request_buffer "\
                 "(#{@max_request_buffer}), serialized event size is #{event_json.bytesize}. "\
