@@ -377,7 +377,7 @@ class EventsTest < Scalyr::ScalyrOutTest
           "0123456789" * 388 + "012345",
           events[0]["attrs"]["message"],
           "'message' field incorrect"
-         )
+        )
         true
       }
     ).once.and_return(response)
