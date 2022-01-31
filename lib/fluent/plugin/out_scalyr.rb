@@ -360,11 +360,20 @@ module Scalyr
         if total_bytes + event_json.bytesize > @max_request_buffer
           # make sure we always have at least one event
           if events.empty?
-            events << event
+            if record.key?(@message_field) and record[@message_field].is_a?(String) and record[@message_field].bytesize > event_json.bytesize - @max_request_buffer
+              @log.warn "Received a record that cannot fit within max_request_buffer (#{@max_request_buffer}), serialized event size is #{event_json.bytesize}. The #{@message_field} field will be truncated to fit."
+              event[:attrs][@message_field] = event[:attrs][@message_field][0...@max_request_buffer - event_json.bytesize]
+              events << event
+            else
+              @log.warn "Received a record that cannot fit within max_request_buffer (#{@max_request_buffer}), serialized event size is #{event_json.bytesize}. The #{@message_field} field too short to truncate, dropping event."
+            end
             append_event = false
           end
-          request = create_request(events, current_threads)
-          requests << request
+
+          if not events.empty?
+            request = create_request(events, current_threads)
+            requests << request
+          end
 
           total_bytes = 0
           current_threads = {}
@@ -380,8 +389,12 @@ module Scalyr
       }
 
       # create a final request with any left over events
-      request = create_request(events, current_threads)
-      requests << request
+      if not events.empty?
+        request = create_request(events, current_threads)
+        requests << request
+      end
+
+      requests
     end
 
     def create_request(events, current_threads)
