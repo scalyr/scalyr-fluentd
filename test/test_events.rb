@@ -373,7 +373,11 @@ class EventsTest < Scalyr::ScalyrOutTest
         body = JSON.parse(request_body)
         events = body["events"]
         assert(events[0]["attrs"].key?("message"), "'message' field not found in event")
-        assert_equal("0123456789" * 388 + "012345", events[0]["attrs"]["message"], "'message' field incorrect")
+        assert_equal(
+          "0123456789" * 388 + "012345",
+          events[0]["attrs"]["message"],
+          "'message' field incorrect"
+         )
         true
       }
     ).once.and_return(response)
@@ -389,7 +393,6 @@ class EventsTest < Scalyr::ScalyrOutTest
     time = event_time("2015-04-01 10:00:00 UTC")
     attrs = {"message" => "this is a test", "not_message" => "0123456789" * 500}
 
-    response = flexmock(Net::HTTPResponse, code: "200", body: '{ "status":"success" }')
     mock = flexmock(d.instance)
 
     mock.should_receive(:post_request).never
