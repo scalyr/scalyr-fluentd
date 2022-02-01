@@ -366,8 +366,8 @@ module Scalyr
               record[@message_field].bytesize > event_json.bytesize - @max_request_buffer
 
               @log.warn "Received a record that cannot fit within max_request_buffer "\
-                "(#{@max_request_buffer}), serialized event size is #{event_json.bytesize}."\
-                " The #{@message_field} field will be truncated to fit."
+                "(#{@max_request_buffer}) from #{record["logfile"]}, serialized event size "\
+                "is #{event_json.bytesize}. The #{@message_field} field will be truncated to fit."
               max_msg_size = @max_request_buffer - event_json.bytesize
               truncated_msg = event[:attrs][@message_field][0...max_msg_size]
               event[:attrs][@message_field] = truncated_msg
@@ -376,8 +376,9 @@ module Scalyr
             # otherwise we drop the event and save ourselves hitting a 4XX response from the server
             else
               @log.warn "Received a record that cannot fit within max_request_buffer "\
-                "(#{@max_request_buffer}), serialized event size is #{event_json.bytesize}. "\
-                "The #{@message_field} field too short to truncate, dropping event."
+                "(#{@max_request_buffer}) from #{record["logfile"]}, serialized event size "\
+                "is #{event_json.bytesize}. The #{@message_field} field too short to truncate, "\
+                "dropping event."
             end
             append_event = false
           end
