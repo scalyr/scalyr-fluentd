@@ -374,7 +374,7 @@ class EventsTest < Scalyr::ScalyrOutTest
         events = body["events"]
         assert(events[0]["attrs"].key?("message"), "'message' field not found in event")
         assert_equal(
-          "0123456789" * 388 + "012345",
+          "0123456789" * 388 + "012...",
           events[0]["attrs"]["message"],
           "'message' field incorrect"
         )
