@@ -358,13 +358,37 @@ module Scalyr
         # generate new request if json size of events in the array exceed maximum request buffer size
         append_event = true
         if total_bytes + event_json.bytesize > @max_request_buffer
-          # make sure we always have at least one event
+          # the case where a single event causes us to exceed the @max_request_buffer
           if events.empty?
-            events << event
+            # if we are able to truncate the content (and append an ellipsis)
+            # inside the @message_field we do so here
+            if record.key?(@message_field) &&
+              record[@message_field].is_a?(String) &&
+              record[@message_field].bytesize > event_json.bytesize - @max_request_buffer &&
+              record[@message_field].bytesize >= 3
+
+              @log.warn "Received a record that cannot fit within max_request_buffer "\
+                "(#{@max_request_buffer}) from #{record['logfile']}, serialized event size "\
+                "is #{event_json.bytesize}. The #{@message_field} field will be truncated to fit."
+              max_msg_size = @max_request_buffer - event_json.bytesize - 3
+              truncated_msg = event[:attrs][@message_field][0...max_msg_size] + "..."
+              event[:attrs][@message_field] = truncated_msg
+              events << event
+
+            # otherwise we drop the event and save ourselves hitting a 4XX response from the server
+            else
+              @log.warn "Received a record that cannot fit within max_request_buffer "\
+                "(#{@max_request_buffer}) from #{record['logfile']}, serialized event size "\
+                "is #{event_json.bytesize}. The #{@message_field} field too short to truncate, "\
+                "dropping event."
+            end
             append_event = false
           end
-          request = create_request(events, current_threads)
-          requests << request
+
+          unless events.empty?
+            request = create_request(events, current_threads)
+            requests << request
+          end
 
           total_bytes = 0
           current_threads = {}
@@ -380,8 +404,12 @@ module Scalyr
       }
 
       # create a final request with any left over events
-      request = create_request(events, current_threads)
-      requests << request
+      unless events.empty?
+        request = create_request(events, current_threads)
+        requests << request
+      end
+
+      requests
     end
 
     def create_request(events, current_threads)

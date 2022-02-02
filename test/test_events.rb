@@ -357,4 +357,48 @@ class EventsTest < Scalyr::ScalyrOutTest
       d.feed(time, attrs)
     end
   end
+
+  def test_truncated_large_event
+    d = create_driver CONFIG + "max_request_buffer 4000"
+
+    time = event_time("2015-04-01 10:00:00 UTC")
+    attrs = {"log" => "this is a test", "message" => "0123456789" * 500}
+
+    response = flexmock(Net::HTTPResponse, code: "200", body: '{ "status":"success" }')
+    mock = flexmock(d.instance)
+
+    mock.should_receive(:post_request).with(
+      URI,
+      on {|request_body|
+        body = JSON.parse(request_body)
+        events = body["events"]
+        assert(events[0]["attrs"].key?("message"), "'message' field not found in event")
+        assert_equal(
+          "0123456789" * 388 + "012...",
+          events[0]["attrs"]["message"],
+          "'message' field incorrect"
+        )
+        true
+      }
+    ).once.and_return(response)
+
+    d.run(default_tag: "test") do
+      d.feed(time, attrs)
+    end
+  end
+
+  def test_dropped_large_event
+    d = create_driver CONFIG + "max_request_buffer 4000"
+
+    time = event_time("2015-04-01 10:00:00 UTC")
+    attrs = {"message" => "this is a test", "not_message" => "0123456789" * 500}
+
+    mock = flexmock(d.instance)
+
+    mock.should_receive(:post_request).never
+
+    d.run(default_tag: "test") do
+      d.feed(time, attrs)
+    end
+  end
 end
