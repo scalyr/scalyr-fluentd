@@ -1,3 +1,9 @@
+## 0.8.15 - February 2nd, 2022
+
+- Improve handling of records cannot fit within the configured `max_request_buffer`.
+  Single large records will now have the message field truncated to fit within a request if possible,
+  and dropped otherwise.
+
 ## 0.8.14 - October 28th, 2021
 
 - Updates to automated release deployment to have `latest` tag in dockerhub updated correctly.
