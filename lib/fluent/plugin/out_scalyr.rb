@@ -74,10 +74,10 @@ module Scalyr
 
     def configure(conf)
       @version = if Gem.loaded_specs.key?("fluent-plugin-scalyr")
-        Gem.loaded_specs["fluent-plugin-scalyr"].version
-      else
-        "unknown"
-      end
+                   Gem.loaded_specs["fluent-plugin-scalyr"].version
+                 else
+                   "unknown"
+                 end
 
       if conf.elements("buffer").empty?
         $log.warn "Pre 0.14.0 configuration file detected.  Please consider updating your configuration file" # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective
