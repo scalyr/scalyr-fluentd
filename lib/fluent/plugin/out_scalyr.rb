@@ -73,10 +73,10 @@ module Scalyr
     end
 
     def configure(conf)
-      if Gem.loaded_specs.key?("fluent-plugin-scalyr")
-        @version = Gem.loaded_specs['fluent-plugin-scalyr'].version
+      @version = if Gem.loaded_specs.key?("fluent-plugin-scalyr")
+        Gem.loaded_specs["fluent-plugin-scalyr"].version
       else
-        @version = "unknown"
+        "unknown"
       end
 
       if conf.elements("buffer").empty?
