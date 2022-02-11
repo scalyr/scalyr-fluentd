@@ -261,7 +261,7 @@ module Scalyr
       post = Net::HTTP::Post.new uri.path
       post.add_field("Content-Type", "application/json")
       post.add_field("Content-Encoding", encoding) if @compression_type
-      post.add_field("User-Agent", "fluent-plugin-scalyr version=#{@version}")
+      post.add_field("User-Agent", "fluent-plugin-scalyr;#{@version}")
 
       post.body = body
 
