@@ -1,3 +1,7 @@
+## TBD - TBD
+
+- Include plugin gem name and version in the "User-Agent" header when uploading logs.
+
 ## 0.8.15 - February 2nd, 2022
 
 - Improve handling of records cannot fit within the configured `max_request_buffer`.

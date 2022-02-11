@@ -73,6 +73,12 @@ module Scalyr
     end
 
     def configure(conf)
+      @version = if Gem.loaded_specs.key?("fluent-plugin-scalyr")
+                   Gem.loaded_specs["fluent-plugin-scalyr"].version
+                 else
+                   "unknown"
+                 end
+
       if conf.elements("buffer").empty?
         $log.warn "Pre 0.14.0 configuration file detected.  Please consider updating your configuration file" # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective
       end
@@ -146,7 +152,7 @@ module Scalyr
       # Generate a session id.  This will be called once for each <match> in fluent.conf that uses scalyr
       @session = SecureRandom.uuid
 
-      $log.info "Scalyr Fluentd Plugin ID id=#{plugin_id} worker=#{fluentd_worker_id} session=#{@session}" # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective
+      $log.info "Scalyr Fluentd Plugin ID id=#{plugin_id} worker=#{fluentd_worker_id} session=#{@session} version=#{@version}" # rubocop:disable Layout/LineLength, Lint/RedundantCopDisableDirective
     end
 
     def format(tag, time, record)
@@ -254,8 +260,8 @@ module Scalyr
 
       post = Net::HTTP::Post.new uri.path
       post.add_field("Content-Type", "application/json")
-
       post.add_field("Content-Encoding", encoding) if @compression_type
+      post.add_field("User-Agent", "fluent-plugin-scalyr;#{@version}")
 
       post.body = body
 
