@@ -1,4 +1,4 @@
-## TBD - TBD
+## 0.8.16 - February 14th, 2022
 
 - Include plugin gem name and version in the "User-Agent" header when uploading logs.
 
