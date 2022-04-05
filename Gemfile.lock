@@ -59,7 +59,7 @@ GEM
     tzinfo-data (1.2020.1)
       tzinfo (>= 1.0.0)
     unicode-display_width (1.7.0)
-    yajl-ruby (1.4.1)
+    yajl-ruby (1.4.2)
     zlib (1.1.0)
 
 PLATFORMS
