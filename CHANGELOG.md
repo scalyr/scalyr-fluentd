@@ -1,3 +1,11 @@
+## 0.8.17 - June 21, 2022
+
+- Update rake requirement from ~> 0.9 to ~> 13.0
+- Update yajl-ruby from 1.4.1 to 1.4.3
+- Update rexml from 3.2.4 to 3.2.5
+- Update fluentd from 1.11.1 to 1.14.2
+  - Update fluentd corresponding dependencies
+
 ## 0.8.16 - February 14th, 2022
 
 - Include plugin gem name and version in the "User-Agent" header when uploading logs.
