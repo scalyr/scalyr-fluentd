@@ -60,6 +60,10 @@ commands:
           command: |
             rake test
 
+      # FIXME 
+      - setup_remote_docker:
+          version: 20.10.14
+
       - run:
           name: Build Docker Image
           command: |
@@ -100,8 +104,6 @@ jobs:
     docker:
       - image: cimg/ruby:3.1.2
     steps:
-      - setup_remote_docker:
-          version: 20.10.14
       - build-test-deploy:
           deploy_changes: false
 
