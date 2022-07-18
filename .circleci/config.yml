@@ -28,9 +28,6 @@ commands:
     steps:
       - checkout
 
-      - setup_remote_docker
-          version: '20.10.17'
-
       - restore_cache:
           name: Restore Ruby Dependencies Cache
           keys:
@@ -103,6 +100,8 @@ jobs:
     docker:
       - image: cimg/ruby:3.1.2
     steps:
+      - setup_remote_docker:
+          version: 20.10.17
       - build-test-deploy:
           deploy_changes: false
 
