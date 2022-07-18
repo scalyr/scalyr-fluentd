@@ -28,8 +28,6 @@ commands:
     steps:
       - checkout
 
-      - setup_remote_docker
-
       - restore_cache:
           name: Restore Ruby Dependencies Cache
           keys:
@@ -61,6 +59,13 @@ commands:
           name: Run Tests
           command: |
             rake test
+
+      # There is a bug in glibc's faccessat when running within containers (including docker builds).
+      # The workaround is request a specifically known working docker engine version.
+      # Ref: https://about.gitlab.com/blog/2021/08/26/its-time-to-upgrade-docker-engine/
+      #      https://circleci.com/docs/building-docker-images
+      - setup_remote_docker:
+          version: 20.10.14
 
       - run:
           name: Build Docker Image
@@ -100,14 +105,14 @@ commands:
 jobs:
   build-test:
     docker:
-      - image: circleci/ruby:2.6.3
+      - image: cimg/ruby:3.1.2
     steps:
       - build-test-deploy:
           deploy_changes: false
 
   build-test-publish-to-rubygems:
     docker:
-      - image: circleci/ruby:2.6.3
+      - image: cimg/ruby:3.1.2
     steps:
       - build-test-deploy:
           deploy_changes: true
