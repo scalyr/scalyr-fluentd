@@ -29,7 +29,7 @@ commands:
       - checkout
 
       - setup_remote_docker
-          version: 20.10.17
+          version: '20.10.17'
 
       - restore_cache:
           name: Restore Ruby Dependencies Cache
