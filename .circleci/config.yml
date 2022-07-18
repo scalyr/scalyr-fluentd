@@ -102,10 +102,10 @@ jobs:
     steps:
       - setup_remote_docker:
           # FIXME STOPPED 20.10.14 worked ok with CircleCI
-          #               Seems cannot request 20.10.17 (locally used version)
+          #               Seems cannot request 20.10.15, 20.10.17 (locally used version)
           #               The default 20.10.16 causes problems
           #               Try 20.10.15 and 20.10.16 explicitly
-          version: 20.10.15
+          version: 20.10.16
       - build-test-deploy:
           deploy_changes: false
 
