@@ -35,6 +35,8 @@ commands:
           keys:
             - gem-cache-v3-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
 
+      - run: sudo gem update --system
+
       - run:
           name: Install Ruby Dependencies
           command: |
@@ -100,14 +102,14 @@ commands:
 jobs:
   build-test:
     docker:
-      - image: cimg/base:2022.06
+      - image: cimg/ruby:3.1.2
     steps:
       - build-test-deploy:
           deploy_changes: false
 
   build-test-publish-to-rubygems:
     docker:
-      - image: cimg/base:2022.06
+      - image: cimg/ruby:3.1.2
     steps:
       - build-test-deploy:
           deploy_changes: true
