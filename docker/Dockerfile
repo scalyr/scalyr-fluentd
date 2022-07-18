@@ -8,10 +8,11 @@ RUN mv /fluent-plugin-scalyr-*.gem /fluent-plugin-scalyr.gem
 RUN apk add --no-cache --update --virtual .build-deps \
         build-base ruby-dev \
  && pwd \
+ && whoami \
  && ls -l . \
- && ls -l /usr/lib/ruby \
- && ls -l /usr/lib/ruby/gems \
- && ls -l /usr/lib/ruby/gems/3.1.0 \
+ && ls -dl /usr/lib/ruby \
+ && ls -dl /usr/lib/ruby/gems \
+ && ls -dl /usr/lib/ruby/gems/3.1.0 \
  && gem install fluent-plugin-scalyr.gem \
  && gem sources --clear-all \
  && apk del .build-deps \
