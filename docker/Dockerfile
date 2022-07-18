@@ -6,8 +6,9 @@ COPY ./pkg/fluent-plugin-scalyr-*.gem /
 RUN mv /fluent-plugin-scalyr-*.gem /fluent-plugin-scalyr.gem
 
 RUN apk add --no-cache --update --virtual .build-deps \
-        sudo build-base ruby-dev \
- && sudo gem install fluent-plugin-scalyr.gem \
+        build-base ruby-dev \
+ && mkdir -p ~/.ruby \
+ && GEM_HOME=~/.ruby gem install fluent-plugin-scalyr.gem \
  && gem sources --clear-all \
  && apk del .build-deps \
  && rm -rf /tmp/* /var/tmp/* /usr/lib/ruby/gems/*/cache/*.gem

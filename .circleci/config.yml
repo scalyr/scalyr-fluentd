@@ -35,8 +35,6 @@ commands:
           keys:
             - gem-cache-v3-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
 
-      - run: sudo gem update --system
-
       - run:
           name: Install Ruby Dependencies
           command: |
