@@ -60,7 +60,10 @@ commands:
           command: |
             rake test
 
-      # FIXME 
+      # There is a bug in glibc's faccessat when running within containers (including docker builds).
+      # The workaround is request a specifically known working docker engine version.
+      # Ref: https://about.gitlab.com/blog/2021/08/26/its-time-to-upgrade-docker-engine/
+      #      https://circleci.com/docs/building-docker-images
       - setup_remote_docker:
           version: 20.10.14
 
