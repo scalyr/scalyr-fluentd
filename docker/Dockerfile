@@ -8,7 +8,7 @@ RUN mv /fluent-plugin-scalyr-*.gem /fluent-plugin-scalyr.gem
 RUN apk add --no-cache --update --virtual .build-deps \
         build-base ruby-dev \
  && pwd \
- && whoami \
+ && id \
  && ls -l . \
  && ls -dl /usr/lib/ruby \
  && ls -dl /usr/lib/ruby/gems \
