@@ -100,14 +100,14 @@ commands:
 jobs:
   build-test:
     docker:
-      - image: circleci/ruby:2.6.3
+      - image: circleci/ruby:3.1.2
     steps:
       - build-test-deploy:
           deploy_changes: false
 
   build-test-publish-to-rubygems:
     docker:
-      - image: circleci/ruby:2.6.3
+      - image: circleci/ruby:3.1.2
     steps:
       - build-test-deploy:
           deploy_changes: true
