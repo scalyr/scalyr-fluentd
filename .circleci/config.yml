@@ -100,14 +100,14 @@ commands:
 jobs:
   build-test:
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/base:2022.06
     steps:
       - build-test-deploy:
           deploy_changes: false
 
   build-test-publish-to-rubygems:
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/base:2022.06
     steps:
       - build-test-deploy:
           deploy_changes: true
