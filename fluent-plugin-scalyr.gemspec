@@ -17,11 +17,10 @@ Gem::Specification.new do |gem|
   gem.test_files = Dir.glob("{test,spec,features}/**/*")
   gem.executables = Dir.glob("bin/*").map {|f| File.basename(f) }
   gem.require_paths = ["lib"]
-  gem.add_dependency "ffi", "1.9.25"
+  gem.add_dependency "ffi", "1.15.5"
   gem.add_dependency "fluentd", [">= 0.14.0", "< 2"]
   gem.add_dependency "rbzip2", "0.3.0"
   gem.add_dependency "zlib"
-  gem.add_development_dependency "bundler", "~> 1.9"
   gem.add_development_dependency "flexmock", "~> 1.2"
   gem.add_development_dependency "rake", "~> 13.0"
   gem.add_development_dependency "rubocop", "~> 0.4"
