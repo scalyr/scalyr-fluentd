@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require "fileutils"
 require "helper"
 require "flexmock/test_unit"
 
@@ -52,7 +53,7 @@ class SSLVerifyTest < Scalyr::ScalyrOutTest
   end
 
   def test_bad_ssl_certificates
-    d = create_driver CONFIG + "ssl_ca_bundle_path /home/invalid"
+    d = create_driver CONFIG + "ssl_ca_bundle_path #{File.join(File.dirname(__FILE__), "bad_ca_cert.crt")}"
 
     d.run(default_tag: "test") do
       time = event_time("2015-04-01 10:00:00 UTC")
