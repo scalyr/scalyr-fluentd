@@ -36,3 +36,4 @@ jobs:
         with:
           push: false
           file: docker/Dockerfile
+          context: .
