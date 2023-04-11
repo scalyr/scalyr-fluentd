@@ -147,3 +147,7 @@ Lint/Debugger:
 # Style preference
 Style/MethodDefParentheses:
   Enabled: false
+
+# Don't force ruby version of gem without knowing what customers are using.
+Gemspec/RequiredRubyVersion:
+  Enabled: false
