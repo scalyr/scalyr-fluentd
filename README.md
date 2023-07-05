@@ -1,6 +1,8 @@
 Scalyr output plugin for Fluentd
 ================================
 
+[![ci](https://github.com/scalyr/scalyr-fluentd/actions/workflows/main.yaml/badge.svg)](https://github.com/scalyr/scalyr-fluentd/actions/workflows/main.yaml)
+
 **Note:** Fluentd introduced breaking changes to their plugin API between
 version 0.12 and 0.14.
 
