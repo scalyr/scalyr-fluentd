@@ -1,4 +1,4 @@
-## 0.8.18 - JUne 13, 2024
+## 0.8.18 - June 13, 2024
 - Update fluentd docker image to `v1.17.0-1.0`
 
 ## 0.8.17 - June 21, 2022
