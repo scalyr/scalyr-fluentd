@@ -28,14 +28,8 @@ jobs:
       - name: Build plugin
         run: bundle exec rake build
 
-      - run: id
-      - run: sudo id
-      - run: ls -dl /usr/lib /usr/lib/ssl /usr/lib/ssl/cert.pem
-
       - name: Run tests
         run: bundle exec rake test
-
-      - run: ls -l /tmp
 
       - name: Capture version
         run: echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV

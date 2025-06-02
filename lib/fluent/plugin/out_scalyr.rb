@@ -209,9 +209,7 @@ module Scalyr
           $log.warn e.message
           $log.warn "Discarding buffer chunk without retrying or logging to <secondary>"
         rescue Scalyr::Client4xxError => e
-          x = Net::HTTP.new("google.com", 443)
-          x.use_ssl = true
-          $log.warn "#{x.ca_file} #{x.ca_path} 4XX status code received for request #{index + 1}/#{requests.size}.  Discarding buffer without retrying or logging.\n\t#{response.code} - #{e.message}\n\tChunk Size: #{chunk.size}\n\tLog messages this request: #{request[:record_count]}\n\tJSON payload size: #{request[:body].bytesize}\n\tSample: #{request[:body][0, 1024]}..."
+          $log.warn "4XX status code received for request #{index + 1}/#{requests.size}.  Discarding buffer without retrying or logging.\n\t#{response.code} - #{e.message}\n\tChunk Size: #{chunk.size}\n\tLog messages this request: #{request[:record_count]}\n\tJSON payload size: #{request[:body].bytesize}\n\tSample: #{request[:body][0, 1024]}..."
         end
       }
     rescue JSON::GeneratorError
