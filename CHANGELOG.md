@@ -1,4 +1,4 @@
-## 0.9.0 - June 2nd, 2024
+## 0.9.0 - June 2nd, 2025
 
 - Bump rexml from 3.2.5 to 3.3.3 (via Dependabot)
 - Update fluentd Docker image to `v1.18.0-debian` with a multistage build
