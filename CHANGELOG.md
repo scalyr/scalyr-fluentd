@@ -1,7 +1,13 @@
-## 0.8.18 - June 13, 2024
-- Update fluentd docker image to `v1.17.0-1.0`
+## 0.9.0 - June 2nd, 2025
 
-## 0.8.17 - June 21, 2022
+- Bump rexml from 3.2.5 to 3.3.3 (via Dependabot)
+- Update fluentd Docker image to `v1.18.0-debian` with a multistage build
+
+## 0.8.18 - June 13th, 2024
+
+- Update fluentd Docker image to `v1.17.0-1.0`
+
+## 0.8.17 - June 21st, 2022
 
 - Update rake requirement from ~> 0.9 to ~> 13.0
 - Update yajl-ruby from 1.4.1 to 1.4.3
