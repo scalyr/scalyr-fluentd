@@ -1,3 +1,8 @@
+## 0.9.1 - June 12th, 2025
+
+- Update fluentd Docker image to `v1.18.0-1.3`
+  - Done to support AWS ECS secretOptions
+
 ## 0.9.0 - June 2nd, 2025
 
 - Bump rexml from 3.2.5 to 3.3.3 (via Dependabot)
