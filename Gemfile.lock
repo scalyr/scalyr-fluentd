@@ -63,7 +63,7 @@ GEM
     tzinfo-data (1.2024.1)
       tzinfo (>= 1.0.0)
     unicode-display_width (1.8.0)
-    webrick (1.8.1)
+    webrick (1.8.2)
     yajl-ruby (1.4.3)
     zlib (3.1.1)
 
